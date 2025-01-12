@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     paddingTop: 70,
     paddingLeft: 30,
     paddingRight: 30,
-    //backgroundColor: "#fff",
+    marginBottom: "25%",
   },
   map: {
     width: "100%",

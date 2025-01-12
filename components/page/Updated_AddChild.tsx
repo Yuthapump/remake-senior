@@ -420,7 +420,7 @@ const styles = StyleSheet.create({
     height: "100%",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#eafff8",
+    // backgroundColor: "#eafff8",
     borderRadius: 20,
     padding: 20,
     shadowColor: "#000",
@@ -428,7 +428,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 3,
     elevation: 6,
-    //borderWidth: 3,
+    // borderWidth: 3,
   },
   input: {
     width: "100%",

@@ -17,6 +17,7 @@ import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
 
 import { set } from "date-fns";
+import { LinearGradient } from "expo-linear-gradient";
 
 export const UpdateProfile: FC = () => {
   const [userName, setUserName] = useState<string>("");
@@ -25,7 +26,6 @@ export const UpdateProfile: FC = () => {
   const [profilePic, setProfilePic] = useState<string | undefined>(undefined);
   const navigation = useNavigation<NavigationProp<any>>();
   const [isEditable, setIsEditable] = useState(false); // ควบคุม editable
-
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -231,14 +231,12 @@ export const UpdateProfile: FC = () => {
     navigation.goBack();
   };
 
-  
   return (
     <SafeAreaProvider>
       <ImageBackground
-              source={require("../../assets/background/bg2.png")}
-              style={styles.container}
-            >
-        
+        source={require("../../assets/background/bg2.png")}
+        style={styles.container}
+      >
         {/* top section */}
         <Text style={styles.header}></Text>
         {/* mid section */}
@@ -252,62 +250,64 @@ export const UpdateProfile: FC = () => {
             style={styles.avatar}
           />
           <Pressable style={styles.addIconSection} onPress={selectImage}>
-                          <Image
-                            source={require("../../assets/icons/add.png")}
-                            style={styles.addIcon}
-                          />
+            <Image
+              source={require("../../assets/icons/add.png")}
+              style={styles.addIcon}
+            />
           </Pressable>
-          </View>
-        <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          value={userName}
-          onChangeText={setUserName}
-          placeholder="Username"
-          editable={isEditable} // เปิด/ปิดการแก้ไข
-        />
-        <Pressable style={[styles.editIconSection]} // เปลี่ยนสไตล์ถ้าปุ่มถูกปิดการใช้งาน} 
-                    onPress={() => setIsEditable(!isEditable)}>
-                          <Image
-                            source={require("../../assets/icons/editicon.png")}
-                            style={styles.editIcon}
-                          />
-        </Pressable>
         </View>
         <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          value={email}
-          onChangeText={setEmail}
-          placeholder="Email"
-          keyboardType="email-address"
-        />
-        <Pressable style={styles.editIconSection} onPress={selectImage}>
-                          <Image
-                            source={require("../../assets/icons/editicon.png")}
-                            style={styles.editIcon}
-                    
-                          />
-                          
-        </Pressable>
-        </View> 
-        <View style={styles.inputContainer}>   
-        <TextInput
-          style={styles.input}
-          value={phoneNumber}
-          onChangeText={setPhoneNumber}
-          placeholder="Phone Number"
-          keyboardType="phone-pad"
-        />
-        <Pressable style={styles.editIconSection} onPress={selectImage}>
-                          <Image
-                            source={require("../../assets/icons/editicon.png")}
-                            style={styles.editIcon}
-                          />
-        </Pressable>
-        </View> 
-        <Pressable style={styles.button} onPress={handleUpdate} >
-          <Text style={styles.buttonText}>Update Profile</Text>
+          <TextInput
+            style={styles.input}
+            value={userName}
+            onChangeText={setUserName}
+            placeholder="Username"
+            editable={isEditable} // เปิด/ปิดการแก้ไข
+          />
+          <Pressable
+            style={[styles.editIconSection]} // เปลี่ยนสไตล์ถ้าปุ่มถูกปิดการใช้งาน}
+            onPress={() => setIsEditable(!isEditable)}
+          >
+            <Image
+              source={require("../../assets/icons/editicon.png")}
+              style={styles.editIcon}
+            />
+          </Pressable>
+        </View>
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            value={email}
+            onChangeText={setEmail}
+            placeholder="Email"
+            keyboardType="email-address"
+          />
+          <Pressable style={styles.editIconSection} onPress={selectImage}>
+            <Image
+              source={require("../../assets/icons/editicon.png")}
+              style={styles.editIcon}
+            />
+          </Pressable>
+        </View>
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            value={phoneNumber}
+            onChangeText={setPhoneNumber}
+            placeholder="Phone Number"
+            keyboardType="phone-pad"
+          />
+          <Pressable style={styles.editIconSection} onPress={selectImage}>
+            <Image
+              source={require("../../assets/icons/editicon.png")}
+              style={styles.editIcon}
+            />
+          </Pressable>
+        </View>
+        <Pressable onPress={handleUpdate}>
+          <LinearGradient colors={["#DDE6FF", "#FFFFFF"]} style={styles.button}>
+            <Text style={styles.buttonText}>Update Profile</Text>
+          </LinearGradient>
         </Pressable>
       </ImageBackground>
       {/* bottom section */}
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     minHeight: 750,
-    borderWidth: 3,
+    // borderWidth: 3,
   },
   updateContainer: {
     flex: 1,
@@ -340,7 +340,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 16,
-    
   },
   avatar: {
     width: 100,
@@ -349,23 +348,22 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   button: {
-    backgroundColor: "#cce9fe",
-    padding: 0,
+    // backgroundColor: "#cce9fe",
+    // padding: 0,
     borderRadius: 20,
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 11,
-    paddingHorizontal: 67,
-    gap: 10,
-    position: 'absolute',
+    // display: "flex",
+    // flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    // paddingVertical: 11,
+    // paddingHorizontal: 67,
+    // gap: 10,
+    // position: "absolute",
     width: 240,
     height: 40,
-    top: 603,
+    marginTop: 100,
     borderWidth: 1.5,
-    borderColor: '#000000',
-    
+    borderColor: "#000000",
   },
   buttonText: {
     color: "#000",
@@ -373,8 +371,8 @@ const styles = StyleSheet.create({
   },
   gradient: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   // ---------------------------------------------------------------------------------------------
@@ -410,13 +408,10 @@ const styles = StyleSheet.create({
   avatarContainer: {
     position: "relative",
     bottom: "100%",
-    
   },
   avtarFrame: {
     borderRadius: 45,
-    height:"13%",
-   
-    
+    height: "13%",
   },
   addIconSection: {
     position: "absolute",
@@ -427,7 +422,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: "center",
     backgroundColor: "#FFD3AB",
-    
   },
   addIcon: {
     top: 4,
@@ -442,23 +436,21 @@ const styles = StyleSheet.create({
   input: {
     width: "80%",
     padding: 10,
-    top:20,
+    top: 20,
     borderWidth: 2,
     borderColor: "#000",
     borderRadius: 10,
-    marginBottom:  12,
-    alignItems: 'center',
-    
+    marginBottom: 12,
+    alignItems: "center",
   },
   editIconSection: {
     position: "absolute",
-    right:50, // ไอคอนอยู่ขอบขวา
-    top:26, // ปรับให้อยู่กลางแนวตั้ง,
+    right: 50, // ไอคอนอยู่ขอบขวา
+    top: 26, // ปรับให้อยู่กลางแนวตั้ง,
   },
   editIcon: {
     top: 4,
     height: 20,
     width: 20,
   },
-  
 });

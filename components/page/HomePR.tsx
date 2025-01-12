@@ -16,6 +16,10 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { Assessment } from "./Assessment";
+import { LinearGradient } from "expo-linear-gradient";
+
+// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 // กำหนด interface สำหรับข้อมูลเด็ก
 export interface Child {
@@ -27,6 +31,21 @@ export interface Child {
   childPic: string;
   age?: number; // Add age property (optional)
 }
+
+export interface AssessmentDetails {
+  assessment_details_id: number;
+  age_range: string;
+  assessment_name: string;
+  assessment_image?: string;
+  assessment_device_name: string | null;
+  assessment_device_image?: string;
+  assessment_device_detail: string | null;
+  assessment_method: string;
+  assessment_succession: string;
+  assessmentInsert_id: number;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 // fn calculate age
 export const calculateAge = (
@@ -53,9 +72,13 @@ export const calculateAge = (
 };
 
 export const HomePR: FC = () => {
+  // useState
   const navigation = useNavigation<NavigationProp<any>>();
   const [children, setChildren] = useState<Child[]>([]); // กำหนดประเภทเป็น array ของ Child
+  const [assessmentDetails, setAssessmentDetails] =
+    useState<AssessmentDetails | null>(null);
 
+  // useEffect
   useFocusEffect(
     React.useCallback(() => {
       const fetchChildData = async () => {
@@ -108,6 +131,19 @@ export const HomePR: FC = () => {
       fetchChildData();
     }, [])
   );
+  // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  // renderAssessmentState
+
+  const renderAssessmentState = () => {
+    if (!assessmentDetails) {
+      console.log("assessmentDetails is null or undefined");
+      return null; // ตรวจสอบว่า assessmentDetails ไม่มีค่า null
+    }
+  };
+  // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+  // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  // navigate
 
   const whenGotoAddChild = () => {
     navigation.navigate("addchild");
@@ -125,35 +161,36 @@ export const HomePR: FC = () => {
     navigation.navigate("choosechild");
   };
 
+  // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
   return (
     <SafeAreaProvider>
       <ImageBackground
-        source={require("../../assets/background/bg1.png")}
+        source={require("../../assets/background/bg2.png")}
         style={styles.background}
       >
         <View style={styles.container}>
-          <View style={styles.topSection}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {/* start assessments Section */}
+          <View style={styles.startassessmentsSection}>
+            <Pressable onPress={whenGotoChooseChild}>
+              <LinearGradient
+                colors={["#FFFFFF", "#E6FFF0", "#DCF5F0"]}
+                style={styles.evaluateButton}
+              >
+                <Image
+                  source={require("../../assets/icons/assessment.png")}
+                  style={styles.asessmentIcon}
+                />
+                <Text style={styles.evaluateText}>เริ่มการประเมิน</Text>
+              </LinearGradient>
+            </Pressable>
+          </View>
+
+          {/* Child data Section */}
+          <View style={styles.midSection}>
+            <ScrollView showsVerticalScrollIndicator={false}>
               {children.length === 0 ? (
-                <View style={styles.profileCardIntro}>
-                  <Image
-                    source={require("../../assets/icons/User_Icon.png")}
-                    style={styles.profileIcon}
-                  />
-                  <View style={styles.profileInfo}>
-                    <View style={styles.IntroContainer}>
-                      <Text style={styles.TextIntro}>กรุณาเพิ่มข้อมูลเด็ก</Text>
-                    </View>
-                    <Pressable
-                      style={styles.detailButtonIntro}
-                      onPress={whenGotoAddChild}
-                    >
-                      <Text style={styles.detailTextIntro}>
-                        เพิ่มข้อมูลเด็กที่นี่
-                      </Text>
-                    </Pressable>
-                  </View>
-                </View>
+                <View style={styles.howtousesection}></View>
               ) : (
                 children.map((child) => (
                   <View
@@ -183,6 +220,60 @@ export const HomePR: FC = () => {
                       <View style={styles.detailsAge}>
                         <Text style={styles.profileAge}>{child.age}</Text>
                       </View>
+
+                      {/* render assessmentsState */}
+                      <View style={styles.stateContainer}>
+                        <View style={styles.assessmentsState}>
+                          <Image
+                            source={require("../../assets/icons/stateGM.png")}
+                            style={styles.stateIcon}
+                          />
+                          <View style={styles.stateNumber}>
+                            <Text style={styles.textState}>10</Text>
+                          </View>
+                        </View>
+
+                        <View style={styles.assessmentsState}>
+                          <Image
+                            source={require("../../assets/icons/stateGM.png")}
+                            style={styles.stateIcon}
+                          />
+                          <View style={styles.stateNumber}>
+                            <Text style={styles.textState}>10</Text>
+                          </View>
+                        </View>
+
+                        <View style={styles.assessmentsState}>
+                          <Image
+                            source={require("../../assets/icons/stateGM.png")}
+                            style={styles.stateIcon}
+                          />
+                          <View style={styles.stateNumber}>
+                            <Text style={styles.textState}>10</Text>
+                          </View>
+                        </View>
+
+                        <View style={styles.assessmentsState}>
+                          <Image
+                            source={require("../../assets/icons/stateGM.png")}
+                            style={styles.stateIcon}
+                          />
+                          <View style={styles.stateNumber}>
+                            <Text style={styles.textState}>10</Text>
+                          </View>
+                        </View>
+
+                        <View style={styles.assessmentsState}>
+                          <Image
+                            source={require("../../assets/icons/stateGM.png")}
+                            style={styles.stateIcon}
+                          />
+                          <View style={styles.stateNumber}>
+                            <Text style={styles.textState}>10</Text>
+                          </View>
+                        </View>
+                      </View>
+
                       <Pressable
                         key={child.child_id}
                         style={
@@ -198,63 +289,14 @@ export const HomePR: FC = () => {
                   </View>
                 ))
               )}
-              <Pressable style={styles.addButton} onPress={whenGotoAddChild}>
-                <Image
-                  source={require("../../assets/icons/add.png")}
-                  style={styles.addIcon}
-                />
-              </Pressable>
             </ScrollView>
           </View>
-
-          <View style={styles.middleSection}>
-            <Pressable
-              style={styles.evaluateButton}
-              onPress={whenGotoChooseChild}
-            >
-              <Image
-                source={require("../../assets/icons/assessment.png")}
-                style={styles.asessmentIcon}
-              />
-              <Text style={styles.evaluateText}>เริ่มการประเมิน</Text>
-            </Pressable>
-          </View>
-
-          <View style={styles.bottomSection}>
-            <View style={styles.assessmentCard}>
-              <View style={styles.assessmentTop}>
-                <View style={styles.assessmentNumberContainer}>
-                  <Text style={styles.assessmentNumber}>71</Text>
-                </View>
-                <View style={styles.assessmentTitleContainer}>
-                  <Text style={styles.assessmentTitle}>
-                    ขว้างลูกบอลขนาดเล็กได้โดยยกมือขึ้นเหนือศีรษะ
-                  </Text>
-                </View>
-              </View>
-              <Image
-                source={require("../../assets/image/child_playing.png")}
-                style={styles.assessmentImage}
-              />
-              <View style={styles.skillContainer}>
-                <Text style={styles.skillHeader}>วิธีฝึกทักษะ</Text>
-                <Text style={styles.skillText}>
-                  1. ขว้างลูกบอลให้เด็กดูโดยยกมือขึ้นเหนือศีรษะ
-                  ไปทางด้านหลังแล้ว ขว้างลูกบอลไปข้างหน้า
-                </Text>
-                <Text style={styles.skillText}>
-                  2. จัดเด็กยืนในท่าที่มั่นคงจับมือเด็กข้างที่ถนัด ถือลูกบอล
-                  แล้วยก ลูกบอลขึ้นเหนือศีรษะไปทางด้านหลัง แล้วขว้างลูกบอลออกไป
-                </Text>
-                <Text style={styles.skillText}>
-                  3. เมื่อเด็กเริ่มทำได้ ลดการช่วยเหลือจนเด็กขว้างลูกบอลได้เอง
-                </Text>
-                <Text style={styles.skillText}>
-                  4. เล่นขว้างลูกบอลกับเด็กบ่อย ๆ
-                </Text>
-              </View>
-            </View>
-          </View>
+          <Pressable style={styles.addButton} onPress={whenGotoAddChild}>
+            <Image
+              source={require("../../assets/icons/add.png")}
+              style={styles.addIcon}
+            />
+          </Pressable>
         </View>
       </ImageBackground>
     </SafeAreaProvider>
@@ -266,67 +308,92 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 40,
     alignItems: "center",
-    justifyContent: "center",
+    // justifyContent: "center",
   },
   background: {
     flex: 1,
     // resizeMode: "cover",
     // height: 850,
+    height: "100%",
+    borderWidth: 2,
   },
-  SafeAreaProvider: {
-    flex: 1,
-    backfaceVisibility: "visible",
+  ScrollView: {
+    width: "100%",
+    borderWidth: 2,
+    borderRadius: 30,
+  },
+  addButton: {
+    backgroundColor: "#FFF",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 15,
+    borderRadius: 30,
+    width: 60,
+    height: 60,
+    left: "80%",
+    position: "absolute",
+    bottom: 0,
+    marginBottom: 100,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 10,
+  },
+  addIcon: {
+    width: 45,
+    height: 45,
   },
 
   // ---------------------------------------------------------------------------------------------
 
-  topSection: {
-    width: "100%",
+  midSection: {
+    width: "90%",
+    height: 570,
     marginTop: 15,
     marginBottom: 15,
     flexDirection: "row",
-    alignItems: "center",
+    // alignItems: "center",
     justifyContent: "center",
+    shadowColor: "#808080", // กำหนดสีของเงาเป็นสีดำ (สีในรูปแบบ Hex)
+    shadowOffset: { width: 0, height: 4 }, // กำหนดการเลื่อนของเงาในแนวนอน (width) และแนวตั้ง (height)
+    shadowOpacity: 0.3, // กำหนดความทึบของเงา (0 คือโปร่งใส, 1 คือทึบเต็มที่)
+    shadowRadius: 2, // กำหนดรัศมีการกระจายของเงา
+    elevation: 6, // กำหนดระดับความสูงของเงา (ใช้ใน Android)
+    // borderWidth: 2,
   },
   profileCardBoy: {
     flexDirection: "row",
-    alignItems: "center",
+    // alignItems: "center",
     backgroundColor: "#c5e5fc",
     padding: 10,
     borderRadius: 30,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 6,
-    width: 250,
-    height: 130,
-    marginLeft: 10,
+    width: 350,
+    height: "auto",
+    marginTop: 15,
   },
   profileCardGirl: {
     flexDirection: "row",
-    alignItems: "center",
+    // alignItems: "center",
     backgroundColor: "#ffd7e5",
     padding: 10,
     borderRadius: 30,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 6,
-    width: 250,
-    height: 130,
-    marginLeft: 10,
+    width: 350,
+    height: "auto",
+    marginTop: 15,
+    // borderWidth: 2,
   },
 
   profileIcon: {
     width: 61,
     height: 61,
-    marginRight: 10,
+    // marginRight: 10,
+    marginTop: 10,
     borderRadius: 50,
   },
   profileInfo: {
     flex: 1,
+    // borderWidth: 2,
   },
   profileName: {
     fontSize: 16,
@@ -378,52 +445,83 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     alignItems: "center",
   },
-
   detailsText: {
     fontSize: 12,
     color: "#FFF",
     padding: 2,
   },
-  addButton: {
-    backgroundColor: "#FFF",
-    padding: 15,
-    borderRadius: 30, // half width,height for cycle
-    width: 62,
-    height: 62,
-    marginLeft: 30,
+
+  // ----------------------------------------------------------------------------------
+
+  stateContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap", // Add this line to wrap content if it overflows
     justifyContent: "center",
+    width: 400,
+    height: "auto",
+    right: 80,
+    // borderWidth: 2,
+  },
+  assessmentsState: {
+    backgroundColor: "#fff",
+    flexDirection: "row",
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 10,
-    marginTop: 32,
-    right: 15,
+    justifyContent: "space-between", // Add space between elements
+    width: 96,
+    height: 50,
+    borderRadius: 30,
+    marginTop: 15,
+    padding: 8,
+    marginRight: 5, // Add some margin to the right for spacing
+    // borderWidth: 1,
   },
-  addIcon: {
-    width: 45,
-    height: 45,
+  textState: {
+    fontSize: 16,
+    color: "#fff",
+    textAlign: "center",
   },
+  stateIcon: {
+    width: 37,
+    height: 37,
+    borderRadius: 30,
+  },
+  stateNumber: {
+    width: 37,
+    height: 37,
+    borderRadius: 30,
+    backgroundColor: "#FF6565",
+    justifyContent: "center",
+    // borderWidth: 1,
+  },
+
   // ---------------------------------------------------------------------------------------------
 
-  middleSection: {
+  startassessmentsSection: {
     alignItems: "center",
     width: "90%",
-    marginBottom: 15,
+    height: "auto",
+    marginTop: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 4,
   },
   evaluateButton: {
     backgroundColor: "#ccfff5",
     flexDirection: "row",
-    padding: 15,
-    borderRadius: 25,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 4,
     width: "100%",
-    height: 95,
+    height: 110,
+    borderRadius: 25,
+    // padding: 15,
+    justifyContent: "center",
+    alignItems: "center",
+    // shadowColor: "#fff",
+    // shadowOffset: { width: 0, height: 5 },
+    // shadowOpacity: 1,
+    // shadowRadius: 3,
+    // elevation: 4,
+    // borderWidth: 2,
   },
   asessmentIcon: {
     width: 65,
@@ -434,27 +532,17 @@ const styles = StyleSheet.create({
     fontSize: 25,
     fontWeight: "bold",
     color: "#333",
-    marginTop: 15,
-    marginLeft: 50,
+    marginHorizontal: 25,
   },
   // ---------------------------------------------------------------------------------------------
 
-  bottomSection: {
-    flex: 1,
-    width: "94%",
-    marginBottom: 15,
-  },
-  assessmentCard: {
+  howtousesection: {
     backgroundColor: "#F8F1FF",
     padding: 15,
     borderRadius: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 4,
     alignItems: "center",
-    height: "100%",
+    width: 350,
+    height: 550,
   },
   assessmentTop: {
     flexDirection: "row",

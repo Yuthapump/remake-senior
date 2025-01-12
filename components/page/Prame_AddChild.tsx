@@ -24,6 +24,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { LinearGradient } from "expo-linear-gradient";
 
 // Form validation schema
 const AddChildSchema = z.object({
@@ -213,206 +214,209 @@ export const AddChild: FC = () => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <ImageBackground
-          source={require("../../assets/background/bg2.png")}
-          style={styles.background}
-        >
-          {/* Top Section */}
-          <Text style={styles.HeaderText}>ข้อมูลเด็กที่ต้องการเพิ่ม</Text>
+      {/* <ScrollView contentContainerStyle={styles.scrollContainer}> */}
+      <ImageBackground
+        source={require("../../assets/background/bg2.png")}
+        style={styles.background}
+      >
+        {/* Top Section */}
+        <Text style={styles.HeaderText}>ข้อมูลเด็กที่ต้องการเพิ่ม</Text>
 
-          {/* Mid Section */}
-          <View style={styles.Inputcontainer}>
-            <View style={styles.container}>
-              <View style={styles.avatarContainer}>
-                {/* placeholder of Picture */}
-                <View style={styles.avtarFrame}>
-                  {childPic ? (
-                    <Image source={{ uri: childPic }} style={styles.avatar} />
-                  ) : (
-                    <Image
-                      source={require("../../assets/icons/userIcon.png")}
-                      style={styles.avatar}
-                    />
-                  )}
-                </View>
-                <Pressable style={styles.addIconSection} onPress={selectImage}>
-                  <Image
-                    source={require("../../assets/icons/add.png")}
-                    style={styles.addIcon}
-                  />
-                </Pressable>
-              </View>
-              {/* Input Section */}
-              <View style={styles.MiddleSection}>
-                <Text style={styles.OnInputText}>ชื่อ-นามสกุล</Text>
-                <Controller
-                  control={control}
-                  name="childName"
-                  render={({ field: { onChange, value } }) => (
-                    <>
-                      <TextInput
-                        style={[
-                          styles.input,
-                          errors.childName && styles.errorInput,
-                        ]}
-                        placeholder="ชื่อ-สกุล"
-                        onChangeText={onChange}
-                        value={value}
-                      />
-                      {errors.childName && (
-                        <Text style={styles.errorText}>
-                          {errors.childName && (
-                            <Text style={styles.errorText}>
-                              กรุณาระบุชื่อเด็ก
-                            </Text>
-                          )}
-                        </Text>
-                      )}
-                    </>
-                  )}
+        {/* Mid Section */}
+        <View style={styles.Inputcontainer}>
+          <View style={styles.avatarContainer}>
+            {/* placeholder of Picture */}
+            <View style={styles.avtarFrame}>
+              {childPic ? (
+                <Image source={{ uri: childPic }} style={styles.avatar} />
+              ) : (
+                <Image
+                  source={require("../../assets/icons/userIcon.png")}
+                  style={styles.avatar}
                 />
-
-                <Text style={styles.OnInputText}>ชื่อเล่น</Text>
-                <Controller
-                  control={control}
-                  name="nickname"
-                  render={({ field: { onChange, value } }) => (
-                    <>
-                      <TextInput
-                        style={[
-                          styles.input,
-                          errors.nickname && styles.errorInput,
-                        ]}
-                        placeholder="ชื่อเล่น"
-                        onChangeText={onChange}
-                        value={value}
-                      />
-                      {errors.nickname && (
-                        <Text style={styles.errorText}>
-                          {errors.nickname && (
-                            <Text style={styles.errorText}>
-                              กรุณาระบุชื่อเล่นเด็ก
-                            </Text>
-                          )}
-                        </Text>
-                      )}
-                    </>
-                  )}
-                />
-
-                <Text style={styles.OnInputText}>วันเกิด</Text>
-
-                <TouchableOpacity
-                  style={styles.input} // ใช้สไตล์เดียวกับ TextInput
-                  onPress={() => setShowDatePicker(true)} // กดเพื่อเปิด DateTimePicker
-                >
-                  <Text style={styles.inputText}>
-                    {selectedDate || "วันเกิดเด็ก"}
-                  </Text>
-                </TouchableOpacity>
-
-                {showDatePicker &&
-                  (Platform.OS === "ios" ? (
-                    <Modal
-                      transparent={true}
-                      animationType="slide"
-                      visible={showDatePicker}
-                    >
-                      <View style={styles.modalBackground}>
-                        <View style={styles.pickerContainer}>
-                          <DateTimePicker
-                            value={date}
-                            mode="date"
-                            display="inline"
-                            onChange={(event, selectedDate) => {
-                              setShowDatePicker(false);
-                              if (selectedDate) {
-                                handleConfirm(selectedDate);
-                              }
-                            }}
-                            textColor="black"
-                            themeVariant="light"
-                          />
-                        </View>
-                      </View>
-                    </Modal>
-                  ) : (
-                    <DateTimePicker
-                      value={date}
-                      mode="date"
-                      display="calendar"
-                      onChange={(event, selectedDate) => {
-                        setShowDatePicker(false);
-                        if (selectedDate) {
-                          handleConfirm(selectedDate);
-                        }
-                      }}
-                    />
-                  ))}
-
-                {errors.birthday && (
-                  <Text style={styles.errorText}>กรุณาระบุวันเกิดเด็ก</Text>
-                )}
-
-                <Text style={styles.label}>เพศ</Text>
-                <View style={styles.genderContainer}>
-                  <Controller
-                    control={control}
-                    name="gender"
-                    render={({ field: { onChange, value } }) => (
-                      <View style={styles.genderOptions}>
-                        <TouchableOpacity
-                          onPress={() => onChange("male")}
-                          style={styles.genderOption}
-                        >
-                          <View
-                            style={
-                              value === "male"
-                                ? styles.radioSelected
-                                : styles.radio
-                            }
-                          />
-                          <Text>ชาย</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          onPress={() => onChange("female")}
-                          style={styles.genderOption}
-                        >
-                          <View
-                            style={
-                              value === "female"
-                                ? styles.radioSelected
-                                : styles.radio
-                            }
-                          />
-                          <Text>หญิง</Text>
-                        </TouchableOpacity>
-                      </View>
-                    )}
-                  />
-                </View>
-              </View>
+              )}
             </View>
-          </View>
-          {/* Bottom Section */}
-          <View style={styles.buttonContainer}>
-            <Pressable style={styles.backButton} onPress={goBack}>
+            <Pressable style={styles.addIconSection} onPress={selectImage}>
               <Image
-                source={require("../../assets/icons/back.png")}
-                style={styles.Icon}
+                source={require("../../assets/icons/add.png")}
+                style={styles.addIcon}
               />
             </Pressable>
-            <Pressable
-              //onPress={whenGotoAssessment}
-              onPress={handleSubmit(onSubmit)}
-              style={styles.submitButton}
-            >
-              <Text style={styles.buttonText}>บันทึก</Text>
-            </Pressable>
           </View>
-        </ImageBackground>
-      </ScrollView>
+          <LinearGradient
+            colors={["#E2F0E9", "#F1FFEC", "#ECFFF8"]}
+            style={styles.container}
+          >
+            {/* Input Section */}
+            <View style={styles.MiddleSection}>
+              <Text style={styles.OnInputText}>ชื่อ-นามสกุล</Text>
+              <Controller
+                control={control}
+                name="childName"
+                render={({ field: { onChange, value } }) => (
+                  <>
+                    <TextInput
+                      style={[
+                        styles.input,
+                        errors.childName && styles.errorInput,
+                      ]}
+                      placeholder="ชื่อ-สกุล"
+                      onChangeText={onChange}
+                      value={value}
+                    />
+                    {errors.childName && (
+                      <Text style={styles.errorText}>
+                        {errors.childName && (
+                          <Text style={styles.errorText}>
+                            กรุณาระบุชื่อเด็ก
+                          </Text>
+                        )}
+                      </Text>
+                    )}
+                  </>
+                )}
+              />
+
+              <Text style={styles.OnInputText}>ชื่อเล่น</Text>
+              <Controller
+                control={control}
+                name="nickname"
+                render={({ field: { onChange, value } }) => (
+                  <>
+                    <TextInput
+                      style={[
+                        styles.input,
+                        errors.nickname && styles.errorInput,
+                      ]}
+                      placeholder="ชื่อเล่น"
+                      onChangeText={onChange}
+                      value={value}
+                    />
+                    {errors.nickname && (
+                      <Text style={styles.errorText}>
+                        {errors.nickname && (
+                          <Text style={styles.errorText}>
+                            กรุณาระบุชื่อเล่นเด็ก
+                          </Text>
+                        )}
+                      </Text>
+                    )}
+                  </>
+                )}
+              />
+
+              <Text style={styles.OnInputText}>วันเกิด</Text>
+
+              <TouchableOpacity
+                style={styles.input} // ใช้สไตล์เดียวกับ TextInput
+                onPress={() => setShowDatePicker(true)} // กดเพื่อเปิด DateTimePicker
+              >
+                <Text style={styles.inputText}>
+                  {selectedDate || "วันเกิดเด็ก"}
+                </Text>
+              </TouchableOpacity>
+
+              {showDatePicker &&
+                (Platform.OS === "ios" ? (
+                  <Modal
+                    transparent={true}
+                    animationType="slide"
+                    visible={showDatePicker}
+                  >
+                    <View style={styles.modalBackground}>
+                      <View style={styles.pickerContainer}>
+                        <DateTimePicker
+                          value={date}
+                          mode="date"
+                          display="inline"
+                          onChange={(event, selectedDate) => {
+                            setShowDatePicker(false);
+                            if (selectedDate) {
+                              handleConfirm(selectedDate);
+                            }
+                          }}
+                          textColor="black"
+                          themeVariant="light"
+                        />
+                      </View>
+                    </View>
+                  </Modal>
+                ) : (
+                  <DateTimePicker
+                    value={date}
+                    mode="date"
+                    display="calendar"
+                    onChange={(event, selectedDate) => {
+                      setShowDatePicker(false);
+                      if (selectedDate) {
+                        handleConfirm(selectedDate);
+                      }
+                    }}
+                  />
+                ))}
+
+              {errors.birthday && (
+                <Text style={styles.errorText}>กรุณาระบุวันเกิดเด็ก</Text>
+              )}
+
+              <Text style={styles.label}>เพศ</Text>
+              <View style={styles.genderContainer}>
+                <Controller
+                  control={control}
+                  name="gender"
+                  render={({ field: { onChange, value } }) => (
+                    <View style={styles.genderOptions}>
+                      <TouchableOpacity
+                        onPress={() => onChange("male")}
+                        style={styles.genderOption}
+                      >
+                        <View
+                          style={
+                            value === "male"
+                              ? styles.radioSelected
+                              : styles.radio
+                          }
+                        />
+                        <Text>ชาย</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => onChange("female")}
+                        style={styles.genderOption}
+                      >
+                        <View
+                          style={
+                            value === "female"
+                              ? styles.radioSelected
+                              : styles.radio
+                          }
+                        />
+                        <Text>หญิง</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                />
+              </View>
+            </View>
+          </LinearGradient>
+        </View>
+        {/* Bottom Section */}
+        <View style={styles.buttonContainer}>
+          <Pressable style={styles.backButton} onPress={goBack}>
+            <Image
+              source={require("../../assets/icons/back.png")}
+              style={styles.Icon}
+            />
+          </Pressable>
+          <Pressable
+            //onPress={whenGotoAssessment}
+            onPress={handleSubmit(onSubmit)}
+            style={styles.submitButton}
+          >
+            <Text style={styles.buttonText}>บันทึก</Text>
+          </Pressable>
+        </View>
+      </ImageBackground>
+      {/* </ScrollView> */}
     </TouchableWithoutFeedback>
   );
 };
@@ -436,9 +440,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     minHeight: 750,
   },
-  scrollContainer: {
-    flexGrow: 1,
-  },
   Inputcontainer: {
     width: "90%",
     height: "61%",
@@ -446,22 +447,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 10,
     top: 0,
-  },
-  container: {
-    width: "100%",
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#eafff8",
-    borderRadius: 20,
-    padding: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 3,
     elevation: 6,
-    //borderWidth: 3,
+    // borderWidth: 2,
+    marginTop: 60, // Add marginTop to prevent overlapping
   },
+  container: {
+    // flex: 1,
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "#eafff8",
+    borderRadius: 20,
+    padding: 20,
+    // borderWidth: 2,
+  },
+
   input: {
     width: "100%",
     height: 50,
@@ -529,10 +534,12 @@ const styles = StyleSheet.create({
     color: "#000",
     fontSize: 18,
   },
+  //
   avatarContainer: {
     position: "absolute",
-    bottom: "100%",
-    //borderWidth: 3,
+    top: -50, // Adjust the top position to move it above the container
+    zIndex: 1,
+    // borderWidth: 3,
   },
   avtarFrame: {
     borderRadius: 50,
@@ -590,7 +597,7 @@ const styles = StyleSheet.create({
     left: 8,
   },
   HeaderText: {
-    bottom: 75,
+    bottom: "3%",
     fontSize: 22,
     fontWeight: "bold",
   },
