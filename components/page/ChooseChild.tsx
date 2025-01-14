@@ -17,62 +17,77 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
-import { Child, calculateAge } from "../../components/page/HomePR";
+import {
+  Child,
+  calculateAge,
+  AssessmentDetails,
+} from "../../components/page/HomePR";
 
 export const ChooseChild: FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
   const [children, setChildren] = useState<Child[]>([]); // กำหนดประเภทเป็น array ของ Child
+  const [assessmentDetails, setAssessmentDetails] = useState<
+    AssessmentDetails[]
+  >([]);
 
   useFocusEffect(
     React.useCallback(() => {
-      const fetchChildData = async () => {
+      const fetchChildDataForParent = async () => {
         try {
           const parent_id = await AsyncStorage.getItem("userId");
 
-          if (parent_id) {
-            const response = await fetch(
-              `https://senior-test-deploy-production-1362.up.railway.app/api/childs/get-child-data?parent_id=${parent_id}`,
-              {
-                headers: {
-                  "Content-Type": "application/json",
-                },
-              }
-            );
+          if (!parent_id) {
+            console.error("Parent ID is missing.");
+            return;
+          }
 
-            if (response.ok) {
-              const jsonResponse = await response.json();
-
-              if (jsonResponse.success && jsonResponse.children) {
-                const updatedChildren: Child[] = jsonResponse.children.map(
-                  (child: Child) => {
-                    const { years, months } = calculateAge(child.birthday); // calculate years/months
-                    const imageUrl = `https://senior-test-deploy-production-1362.up.railway.app/${child.childPic}`;
-                    return {
-                      ...child,
-                      age: `${years} ปี ${months} เดือน`, // set age
-                      childPic: imageUrl,
-                    };
-                  }
-                );
-
-                setChildren(updatedChildren); // setting age child
-              } else {
-                setChildren([]);
-              }
-            } else {
-              console.error(
-                "HTTP Error: ",
-                response.status,
-                response.statusText
-              );
+          const response = await fetch(
+            `https://senior-test-deploy-production-1362.up.railway.app/api/childs/get-child-data?parent_id=${parent_id}`,
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
             }
+          );
+
+          if (response.ok) {
+            const jsonResponse = await response.json();
+
+            if (jsonResponse.children) {
+              const updatedChildren: Child[] = jsonResponse.children.map(
+                (child: Child) => {
+                  const { years, months } = calculateAge(child.birthday);
+                  const imageUrl = `https://senior-test-deploy-production-1362.up.railway.app/${child.childPic}`;
+                  return {
+                    ...child,
+                    age: `${years} ปี ${months} เดือน`,
+                    childPic: imageUrl,
+                  };
+                }
+              );
+              setChildren(updatedChildren);
+
+              const allAssessments = jsonResponse.children.map(
+                (child: any) => child.assessments || []
+              );
+              setAssessmentDetails(allAssessments.flat());
+              console.log("Assessments fetched:", allAssessments);
+            } else {
+              console.log("No children found.");
+              setChildren([]);
+              setAssessmentDetails([]);
+            }
+          } else {
+            console.error(
+              `Error fetching data: ${response.status} ${response.statusText}`
+            );
           }
         } catch (error) {
-          console.error("Error retrieving child data:", error);
+          console.error("Error fetching child data:", error);
         }
       };
 
-      fetchChildData();
+      fetchChildDataForParent();
     }, [])
   );
 

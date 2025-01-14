@@ -30,10 +30,12 @@ export interface Child {
   gender: string;
   childPic: string;
   age?: number; // Add age property (optional)
+  assessments: AssessmentDetails[];
 }
 
 export interface AssessmentDetails {
   assessment_details_id: number;
+  aspect: string;
   age_range: string;
   assessment_name: string;
   assessment_image?: string;
@@ -43,6 +45,7 @@ export interface AssessmentDetails {
   assessment_method: string;
   assessment_succession: string;
   assessmentInsert_id: number;
+  child_id: number;
 }
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -75,72 +78,151 @@ export const HomePR: FC = () => {
   // useState
   const navigation = useNavigation<NavigationProp<any>>();
   const [children, setChildren] = useState<Child[]>([]); // กำหนดประเภทเป็น array ของ Child
-  const [assessmentDetails, setAssessmentDetails] =
-    useState<AssessmentDetails | null>(null);
+  const [assessmentDetails, setAssessmentDetails] = useState<
+    AssessmentDetails[]
+  >([]);
 
   // useEffect
   useFocusEffect(
     React.useCallback(() => {
-      const fetchChildData = async () => {
+      const fetchChildDataForParent = async () => {
         try {
           const parent_id = await AsyncStorage.getItem("userId");
 
-          if (parent_id) {
-            const response = await fetch(
-              `https://senior-test-deploy-production-1362.up.railway.app/api/childs/get-child-data?parent_id=${parent_id}`,
-              {
-                headers: {
-                  "Content-Type": "application/json",
-                },
-              }
-            );
+          if (!parent_id) {
+            console.error("Parent ID is missing.");
+            return;
+          }
 
-            if (response.ok) {
-              const jsonResponse = await response.json();
-
-              if (jsonResponse.success && jsonResponse.children) {
-                const updatedChildren: Child[] = jsonResponse.children.map(
-                  (child: Child) => {
-                    const { years, months } = calculateAge(child.birthday); // calculate years/months
-                    const imageUrl = `https://senior-test-deploy-production-1362.up.railway.app/${child.childPic}`;
-                    return {
-                      ...child,
-                      age: `${years} ปี ${months} เดือน`, // set age
-                      childPic: imageUrl,
-                    };
-                  }
-                );
-
-                setChildren(updatedChildren); // setting age child
-              } else {
-                setChildren([]);
-              }
-            } else {
-              console.error(
-                "HTTP Error: ",
-                response.status,
-                response.statusText
-              );
+          const response = await fetch(
+            `https://senior-test-deploy-production-1362.up.railway.app/api/childs/get-child-data?parent_id=${parent_id}`,
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
             }
+          );
+
+          if (response.ok) {
+            const jsonResponse = await response.json();
+
+            if (jsonResponse.children) {
+              const updatedChildren: Child[] = jsonResponse.children.map(
+                (child: Child) => {
+                  const { years, months } = calculateAge(child.birthday);
+                  const imageUrl = `https://senior-test-deploy-production-1362.up.railway.app/${child.childPic}`;
+                  return {
+                    ...child,
+                    age: `${years} ปี ${months} เดือน`,
+                    childPic: imageUrl,
+                  };
+                }
+              );
+              setChildren(updatedChildren);
+
+              const allAssessments = jsonResponse.children.map(
+                (child: any) => child.assessments || []
+              );
+              setAssessmentDetails(allAssessments.flat());
+              console.log("Assessments fetched:", allAssessments);
+            } else {
+              console.log("No children found.");
+              setChildren([]);
+              setAssessmentDetails([]);
+            }
+          } else {
+            console.error(
+              `Error fetching data: ${response.status} ${response.statusText}`
+            );
           }
         } catch (error) {
-          console.error("Error retrieving child data:", error);
+          console.error("Error fetching child data:", error);
         }
       };
 
-      fetchChildData();
+      fetchChildDataForParent();
     }, [])
   );
+
   // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   // renderAssessmentState
 
-  const renderAssessmentState = () => {
+  const renderAssessmentState = (childId: number) => {
     if (!assessmentDetails) {
       console.log("assessmentDetails is null or undefined");
-      return null; // ตรวจสอบว่า assessmentDetails ไม่มีค่า null
+      return null; // Return null if assessmentDetails is not available
     }
+    console.log("childId:", childId);
+    console.log("assessmentDetails:", assessmentDetails);
+
+    // Filter the assessment details by childId to ensure we only display relevant data
+    const childAssessmentDetails = children
+      .filter((child) => child.child_id === childId)
+      .flatMap((child) =>
+        child.assessments.filter((detail) => detail.aspect !== "none")
+      );
+
+    // If no assessment details for this child, return null (nothing to render)
+    if (childAssessmentDetails.length === 0) {
+      return null;
+    }
+
+    return (
+      <View style={styles.stateContainer}>
+        {/* Loop through each aspect and filter corresponding details */}
+        {["GM", "FM", "RL", "EL", "PS"].map((aspect) => {
+          const filteredDetails = childAssessmentDetails.filter(
+            (detail) => detail.aspect === aspect && detail.aspect !== "none"
+          );
+
+          // If there are no details for this aspect, skip rendering
+          if (filteredDetails.length === 0) return null;
+
+          // Select the correct icon based on the aspect
+          let aspectImage;
+          switch (aspect) {
+            case "GM":
+              aspectImage = require("../../assets/icons/stateGM.png");
+              break;
+            case "FM":
+              aspectImage = require("../../assets/icons/stateFM.png");
+              break;
+            case "RL":
+              aspectImage = require("../../assets/icons/stateRL.png");
+              break;
+            case "EL":
+              aspectImage = require("../../assets/icons/stateEL.png");
+              break;
+            case "PS":
+              aspectImage = require("../../assets/icons/statePS.png");
+              break;
+            default:
+              aspectImage = require("../../assets/icons/childIcon.png"); // Fallback image
+          }
+
+          return (
+            <View key={aspect}>
+              {/* Render each detail for this aspect */}
+              {filteredDetails.map((detail) => (
+                <View
+                  key={detail.assessment_details_id}
+                  style={styles.assessmentsState}
+                >
+                  {/* Render the icon for the current aspect */}
+                  <Image source={aspectImage} style={styles.stateIcon} />
+                  <View style={styles.stateNumber}>
+                    <Text style={styles.textState}>
+                      {detail.assessment_details_id}
+                    </Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          );
+        })}
+      </View>
+    );
   };
-  // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   // navigate
@@ -222,57 +304,7 @@ export const HomePR: FC = () => {
                       </View>
 
                       {/* render assessmentsState */}
-                      <View style={styles.stateContainer}>
-                        <View style={styles.assessmentsState}>
-                          <Image
-                            source={require("../../assets/icons/stateGM.png")}
-                            style={styles.stateIcon}
-                          />
-                          <View style={styles.stateNumber}>
-                            <Text style={styles.textState}>10</Text>
-                          </View>
-                        </View>
-
-                        <View style={styles.assessmentsState}>
-                          <Image
-                            source={require("../../assets/icons/stateGM.png")}
-                            style={styles.stateIcon}
-                          />
-                          <View style={styles.stateNumber}>
-                            <Text style={styles.textState}>10</Text>
-                          </View>
-                        </View>
-
-                        <View style={styles.assessmentsState}>
-                          <Image
-                            source={require("../../assets/icons/stateGM.png")}
-                            style={styles.stateIcon}
-                          />
-                          <View style={styles.stateNumber}>
-                            <Text style={styles.textState}>10</Text>
-                          </View>
-                        </View>
-
-                        <View style={styles.assessmentsState}>
-                          <Image
-                            source={require("../../assets/icons/stateGM.png")}
-                            style={styles.stateIcon}
-                          />
-                          <View style={styles.stateNumber}>
-                            <Text style={styles.textState}>10</Text>
-                          </View>
-                        </View>
-
-                        <View style={styles.assessmentsState}>
-                          <Image
-                            source={require("../../assets/icons/stateGM.png")}
-                            style={styles.stateIcon}
-                          />
-                          <View style={styles.stateNumber}>
-                            <Text style={styles.textState}>10</Text>
-                          </View>
-                        </View>
-                      </View>
+                      {renderAssessmentState(child.child_id)}
 
                       <Pressable
                         key={child.child_id}
