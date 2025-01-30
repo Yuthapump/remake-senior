@@ -78,6 +78,7 @@ export const FM: FC = () => {
 
         try {
           const user_id = await AsyncStorage.getItem("userId");
+          const token = await AsyncStorage.getItem("userToken");
           console.log(
             "Fetching data for child_id:",
             child.child_id,
@@ -87,7 +88,13 @@ export const FM: FC = () => {
 
           const response = await fetch(
             `https://senior-test-deploy-production-1362.up.railway.app/api/assessments/assessments-get-details/${child.child_id}/FM/${user_id}/${childAgeInMonths}`,
-            { method: "GET" }
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            }
           );
 
           if (response.ok) {
@@ -231,12 +238,14 @@ export const FM: FC = () => {
     user_id: number
   ) => {
     try {
+      const token = await AsyncStorage.getItem("userToken");
       const response = await fetch(
         `https://senior-test-deploy-production-1362.up.railway.app/api/assessments/assessments-next/${child_id}/${aspect}`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ assessment_id, user_id }), // ส่ง assessment_id ใน body ของ request
         }
@@ -284,7 +293,7 @@ export const FM: FC = () => {
           <Image source={{ uri: child.childPic }} style={styles.profileIcon} />
           <View style={styles.profileInfo}>
             <View style={styles.detailsName}>
-              <Text style={styles.profileName}>{child.childName}</Text>
+              <Text style={styles.profileName}>{child.nickName}</Text>
             </View>
             <View style={styles.detailsAge}>
               <Text style={styles.profileAge}>{child.age}</Text>

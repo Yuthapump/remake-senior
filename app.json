@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "remake-app",
-    "slug": "remake-app",
+    "slug": "senior-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yuthapum.seniorapp"
     },
     "android": {
       "adaptiveIcon": {
@@ -36,6 +37,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "00053ed2-e62e-4aa8-acb2-88db41c61854"
+      }
+    },
+    "owner": "yuthapum"
   }
 }

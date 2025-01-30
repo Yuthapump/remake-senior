@@ -9,6 +9,8 @@ import {
   Alert,
   Image,
   ImageBackground,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
@@ -24,12 +26,15 @@ export const UpdateProfile: FC = () => {
   const [email, setEmail] = useState<string>("");
   const [phoneNumber, setPhoneNumber] = useState<string>("");
   const [profilePic, setProfilePic] = useState<string | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isEditable, setIsEditable] = useState<boolean>(false);
   const navigation = useNavigation<NavigationProp<any>>();
-  const [isEditable, setIsEditable] = useState(false); // ควบคุม editable
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
+        setIsLoading(true);
+        const token = await AsyncStorage.getItem("userToken");
         const storedUserName = await AsyncStorage.getItem("userName");
         const storedEmail = await AsyncStorage.getItem("email");
         const storedPhoneNumber = await AsyncStorage.getItem("phoneNumber");
@@ -39,31 +44,34 @@ export const UpdateProfile: FC = () => {
         if (storedEmail) setEmail(storedEmail);
         if (storedPhoneNumber) setPhoneNumber(storedPhoneNumber);
         if (storedProfilePic) setProfilePic(storedProfilePic);
-        const userId = await AsyncStorage.getItem("userId");
 
+        const userId = await AsyncStorage.getItem("userId");
         if (userId) {
           const response = await fetch(
             `https://senior-test-deploy.onrender.com/api/profile/get-user-profile-pic?userId=${userId}`,
             {
               headers: {
                 "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
               },
             }
           );
 
           if (response.ok) {
             const jsonResponse = await response.json();
-
             if (jsonResponse.success && jsonResponse.profilePic) {
-              const imageUrl = `https://senior-test-deploy.onrender.com/${jsonResponse.profilePic}`; // บีบรูปเป็น uri
+              const imageUrl = `https://senior-test-deploy.onrender.com/${jsonResponse.profilePic}`;
               setProfilePic(imageUrl);
+              await AsyncStorage.setItem("profilePic", imageUrl);
             }
           } else {
-            console.error("HTTP Error: ", response.status, response.statusText);
+            console.error("HTTP Error:", response.status, response.statusText);
           }
         }
       } catch (error) {
         console.error("Error retrieving user data:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -182,7 +190,6 @@ export const UpdateProfile: FC = () => {
         {
           method: "PUT",
           body: formData,
-          // ไม่ต้องตั้งค่า Content-Type เพราะ fetch จะจัดการให้
         }
       );
 
@@ -223,6 +230,8 @@ export const UpdateProfile: FC = () => {
     } catch (error) {
       Alert.alert("Update Failed", "An error occurred while updating profile.");
       console.error("Error updating profile:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -241,14 +250,21 @@ export const UpdateProfile: FC = () => {
         <Text style={styles.header}></Text>
         {/* mid section */}
         <View style={styles.avtarFrame}>
-          <Image
-            source={
-              profilePic
-                ? { uri: profilePic }
-                : require("../../assets/icons/User_Icon.png")
-            }
-            style={styles.avatar}
-          />
+          {isLoading ? (
+            <Image
+              source={require("../../assets/loading/loading-profile.gif")}
+              style={styles.avatar}
+            />
+          ) : (
+            <Image
+              source={
+                profilePic
+                  ? { uri: profilePic }
+                  : require("../../assets/icons/User_Icon.png")
+              }
+              style={styles.avatar}
+            />
+          )}
           <Pressable style={styles.addIconSection} onPress={selectImage}>
             <Image
               source={require("../../assets/icons/add.png")}
@@ -306,7 +322,9 @@ export const UpdateProfile: FC = () => {
         </View>
         <Pressable onPress={handleUpdate}>
           <LinearGradient colors={["#DDE6FF", "#FFFFFF"]} style={styles.button}>
-            <Text style={styles.buttonText}>Update Profile</Text>
+            <View>
+              <Text style={styles.buttonText}>Update Profile</Text>
+            </View>
           </LinearGradient>
         </Pressable>
       </ImageBackground>
@@ -412,6 +430,7 @@ const styles = StyleSheet.create({
   avtarFrame: {
     borderRadius: 45,
     height: "13%",
+    borderWidth: 2,
   },
   addIconSection: {
     position: "absolute",

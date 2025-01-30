@@ -24,7 +24,8 @@ import { EL } from "./components/assessment/EL";
 import { PS } from "./components/assessment/PS";
 import { Training } from "./components/assessment/Training";
 import { UpdateProfile } from "./components/page/UpdateProfile";
-
+import { AddRoom } from "./components/page/AddRoom"; // Ensure this path is correct or create the file
+import { AddchildSP } from "./components/page/AddchildSP";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -122,6 +123,16 @@ export default function App() {
           <Stack.Screen
             name="adminHome"
             component={HomeAD}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="addroom"
+            component={AddRoom}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="addchildSP"
+            component={AddchildSP}
             options={{ headerShown: false }}
           />
         </Stack.Navigator>

@@ -1,3 +1,4 @@
+// Login.tsx
 import React, { FC } from "react";
 import {
   View,
@@ -51,12 +52,6 @@ export const Login: FC = () => {
     navigation.navigate("register");
   };
 
-  //--- for Test ---//
-  const whenGotoHome = () => {
-    navigation.navigate("mainPR");
-  };
-  //--- for Test ---//
-
   const validatePass: SubmitHandler<LoginModel> = async (form) => {
     console.log(form);
     // send form data to api server
@@ -74,10 +69,24 @@ export const Login: FC = () => {
           }),
         }
       );
+
+      if (!resp.ok) {
+        // Handle specific HTTP status codes
+        if (resp.status === 401) {
+          throw new Error("Invalid username or password");
+        } else if (resp.status === 500) {
+          throw new Error("Server error. Please try again later.");
+        } else {
+          throw new Error("Unexpected error occurred");
+        }
+      }
+
+      const jsonResp = await resp.json();
+
       if (resp.status === 200) {
         Alert.alert("เข้าระบบสำเร็จ");
-        const jsonResp = await resp.json();
-        console.log("Response JSON:", jsonResp); // ตรวจสอบรูปแบบของ jsonResp
+        console.log("Form submitted Sir'Benz:", form);
+        console.log("API Response JSON Sir'Benz:", jsonResp);
 
         if (jsonResp.success) {
           const {
@@ -119,6 +128,9 @@ export const Login: FC = () => {
             });
           } else if (role == "admin") {
             navigation.navigate("adminHome");
+          } else {
+            console.log("Unknown role:", role);
+            Alert.alert("Error", "Unknown user role");
           }
         } else {
           Alert.alert("เข้าระบบไม่สำเร็จ", "กรุณาลองอีกครั้ง");

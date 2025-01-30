@@ -9,7 +9,8 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 
 import { HomePR } from "./page/HomePR";
 import { Setting } from "./page/Setting";
-import { Notificate } from "./page/Notificate";
+import { Notificate } from "./page/TestNotificate";
+// import { Notificate } from "./page/Notificate";
 import { Advice } from "./page/Advice";
 
 // Define your custom icon paths

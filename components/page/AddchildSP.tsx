@@ -13,21 +13,25 @@ import {
   TouchableWithoutFeedback,
   ImageBackground,
   Keyboard,
+  Modal,
 } from "react-native";
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { format } from "date-fns";
-import DateTimePickerModal from "react-native-modal-datetime-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
+import DateTimePicker from "@react-native-community/datetimepicker";
+// import DatePicker from "react-native-date-picker";
+import { LinearGradient } from "expo-linear-gradient";
 
 // Form validation schema
 const AddChildSchema = z.object({
-  childName: z.string().min(5, "กรุณาระบุชื่อ-นามสกุลเด็ก").max(150),
-  nickname: z.string().min(2, "กรุณาระบุชื่อเล่นเด็ก").max(150),
+  firstName: z.string().min(4, "กรุณาระบุชื่อเด็ก").max(150),
+  lastName: z.string().min(4, "กรุณาระบุนามสกุลเด็ก").max(150),
+  nickName: z.string().min(2, "กรุณาระบุชื่อเล่นเด็ก").max(150),
   birthday: z.date({
     required_error: "กรุณาระบุวันเกิดเด็ก",
     invalid_type_error: "รูปแบบวันเกิดไม่ถูกต้อง",
@@ -38,7 +42,7 @@ const AddChildSchema = z.object({
 // Type Definitions
 type AddChildModel = z.infer<typeof AddChildSchema>;
 
-export const AddChild: FC = () => {
+export const AddchildSP: FC = () => {
   const {
     control,
     handleSubmit,
@@ -52,21 +56,22 @@ export const AddChild: FC = () => {
 
   const [childPic, setChildPic] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const [date, setDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const showDatePicker = () => {
-    setDatePickerVisibility(true);
-  };
+  // ฟังก์ชันการจัดการการยืนยันวันที่
+  const handleConfirm = (selectedDate: Date) => {
+    setShowDatePicker(false);
 
-  const hideDatePicker = () => {
-    setDatePickerVisibility(false);
-  };
+    // แปลงวันที่จาก Gregorian เป็น Buddhist Era (เพิ่ม 543 ปี)
+    const thaiYear = selectedDate.getFullYear() + 543;
 
-  const handleConfirm = (date: Date) => {
-    const formattedDate = format(date, "yyyy-MM-dd");
-    setSelectedDate(formattedDate);
-    setValue("birthday", new Date(formattedDate));
-    hideDatePicker();
+    // ใช้ format จาก date-fns
+    const formattedDate = format(selectedDate, "dd-MM-") + thaiYear; // เก็บปีในรูปแบบ BE
+
+    setSelectedDate(formattedDate); // เก็บวันที่ที่แปลงแล้วใน state
+    setDate(selectedDate); // เก็บ Date object
+    setValue("birthday", selectedDate); // ส่งค่าไปยัง react-hook-form
   };
 
   // ฟังก์ชันขออนุญาต
@@ -123,18 +128,25 @@ export const AddChild: FC = () => {
 
   // ฟังก์ชันสำหรับส่งข้อมูล
   const onSubmit: SubmitHandler<AddChildModel> = async (formData) => {
-    const userId = await AsyncStorage.getItem("userId");
+    const supervisor_id = await AsyncStorage.getItem("userId");
+    const token = await AsyncStorage.getItem("userToken");
+
     console.log("Form data:", formData);
+    console.log("supervisor_id: ", supervisor_id);
+    console.log("Date: ", selectedDate);
     //console.log("childPic data:", childPic);
 
     try {
       const data = new FormData();
       // Append values only if they are not null
-      if (formData.childName) {
-        data.append("childName", formData.childName);
+      if (formData.firstName) {
+        data.append("firstName", formData.firstName);
       }
-      if (formData.nickname) {
-        data.append("nickname", formData.nickname);
+      if (formData.lastName) {
+        data.append("lastName", formData.lastName);
+      }
+      if (formData.nickName) {
+        data.append("nickName", formData.nickName);
       }
       if (selectedDate) {
         data.append("birthday", selectedDate);
@@ -142,8 +154,8 @@ export const AddChild: FC = () => {
       if (formData.gender) {
         data.append("gender", formData.gender);
       }
-      if (userId) {
-        data.append("parent_id", userId);
+      if (supervisor_id) {
+        data.append("supervisor_id", supervisor_id);
       }
 
       // ตรวจสอบว่ามีรูปภาพหรือไม่
@@ -166,14 +178,17 @@ export const AddChild: FC = () => {
           console.error("Error processing image:", error);
         }
       } else {
-        console.log("No childPic provided");
+        Alert.alert("ไม่สำเร็จ", "กรุณาเลือกรูปภาพ");
       }
 
       // ส่งคำขอไปยัง API
       const resp = await fetch(
-        "https://senior-test-deploy-production-1362.up.railway.app/api/childs/addChild",
+        "https://senior-test-deploy-production-1362.up.railway.app/api/childs/addChild-S",
         {
           method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
           body: data,
         }
       );
@@ -184,7 +199,7 @@ export const AddChild: FC = () => {
 
       if (resp.ok) {
         Alert.alert("สำเร็จ", "เพิ่มข้อมูลเด็กสำเร็จ");
-        //await AsyncStorage.setItem("ProfileChild", jsonResp.childPic);
+        // await AsyncStorage.setItem("ProfileChild", jsonResp.childPic);
         navigation.navigate("mainPR");
       } else if (resp.status === 409) {
         Alert.alert("ไม่สำเร็จ", "มีเด็กในระบบอยู่แล้ว");
@@ -200,11 +215,6 @@ export const AddChild: FC = () => {
     }
   };
 
-  // // navigate to
-  // const whenGoBacktoHome = () => {
-  //   navigation.navigate("mainPR");
-  // };
-  // navigate goBack
   const goBack = () => {
     navigation.goBack();
   };
@@ -221,46 +231,49 @@ export const AddChild: FC = () => {
 
         {/* Mid Section */}
         <View style={styles.Inputcontainer}>
-          <View style={styles.container}>
-            <View style={styles.avatarContainer}>
-              {/* placeholder of Picture */}
-              <View style={styles.avtarFrame}>
-                {childPic ? (
-                  <Image source={{ uri: childPic }} style={styles.avatar} />
-                ) : (
-                  <Image
-                    source={require("../../assets/icons/userIcon.png")}
-                    style={styles.avatar}
-                  />
-                )}
-              </View>
-              <Pressable style={styles.addIconSection} onPress={selectImage}>
+          <View style={styles.avatarContainer}>
+            {/* placeholder of Picture */}
+            <View style={styles.avtarFrame}>
+              {childPic ? (
+                <Image source={{ uri: childPic }} style={styles.avatar} />
+              ) : (
                 <Image
-                  source={require("../../assets/icons/add.png")}
-                  style={styles.addIcon}
+                  source={require("../../assets/icons/userIcon.png")}
+                  style={styles.avatar}
                 />
-              </Pressable>
+              )}
             </View>
+            <Pressable style={styles.addIconSection} onPress={selectImage}>
+              <Image
+                source={require("../../assets/icons/add.png")}
+                style={styles.addIcon}
+              />
+            </Pressable>
+          </View>
+          <LinearGradient
+            colors={["#E2F0E9", "#F1FFEC", "#ECFFF8"]}
+            style={styles.container}
+          >
             {/* Input Section */}
             <View style={styles.MiddleSection}>
-              <Text style={styles.OnInputText}>ชื่อ-นามสกุล</Text>
               <Controller
                 control={control}
-                name="childName"
+                name="firstName"
                 render={({ field: { onChange, value } }) => (
                   <>
                     <TextInput
                       style={[
                         styles.input,
-                        errors.childName && styles.errorInput,
+                        errors.firstName && styles.errorInput,
                       ]}
-                      placeholder="ชื่อ-สกุล"
+                      placeholder="ชื่อเด็ก"
+                      placeholderTextColor="#A9A9A9"
                       onChangeText={onChange}
                       value={value}
                     />
-                    {errors.childName && (
+                    {errors.firstName && (
                       <Text style={styles.errorText}>
-                        {errors.childName && (
+                        {errors.firstName && (
                           <Text style={styles.errorText}>
                             กรุณาระบุชื่อเด็ก
                           </Text>
@@ -271,24 +284,52 @@ export const AddChild: FC = () => {
                 )}
               />
 
-              <Text style={styles.OnInputText}>ชื่อเล่น</Text>
               <Controller
                 control={control}
-                name="nickname"
+                name="lastName"
                 render={({ field: { onChange, value } }) => (
                   <>
                     <TextInput
                       style={[
                         styles.input,
-                        errors.nickname && styles.errorInput,
+                        errors.lastName && styles.errorInput,
                       ]}
-                      placeholder="ชื่อเล่น"
+                      placeholder="นามสกุลเด็ก"
+                      placeholderTextColor="#A9A9A9"
                       onChangeText={onChange}
                       value={value}
                     />
-                    {errors.nickname && (
+                    {errors.lastName && (
                       <Text style={styles.errorText}>
-                        {errors.nickname && (
+                        {errors.lastName && (
+                          <Text style={styles.errorText}>
+                            กรุณาระบุนามสกุลเด็ก
+                          </Text>
+                        )}
+                      </Text>
+                    )}
+                  </>
+                )}
+              />
+
+              <Controller
+                control={control}
+                name="nickName"
+                render={({ field: { onChange, value } }) => (
+                  <>
+                    <TextInput
+                      style={[
+                        styles.input,
+                        errors.nickName && styles.errorInput,
+                      ]}
+                      placeholder="ชื่อเล่น"
+                      placeholderTextColor="#A9A9A9"
+                      onChangeText={onChange}
+                      value={value}
+                    />
+                    {errors.nickName && (
+                      <Text style={styles.errorText}>
+                        {errors.nickName && (
                           <Text style={styles.errorText}>
                             กรุณาระบุชื่อเล่นเด็ก
                           </Text>
@@ -299,30 +340,77 @@ export const AddChild: FC = () => {
                 )}
               />
 
-              <Text style={styles.OnInputText}>วันเกิด</Text>
-              <Pressable onPress={showDatePicker}>
-                <TextInput
-                  style={styles.input}
-                  value={selectedDate || ""}
-                  placeholder="วันเกิดเด็ก"
-                  editable={false}
-                />
-              </Pressable>
-              {/*{errors.birthday && (
-                    <Text style={styles.errorText}>
-                      {errors.birthday && (
-                        <Text style={styles.errorText}>
-                          กรุณาระบุวันเกิดเด็ก
-                        </Text>
-                      )}
-                    </Text>
-                  )}*/}
+              {/* DatePicker */}
+              <TouchableOpacity
+                style={styles.input}
+                onPress={() => setShowDatePicker(true)}
+              >
+                <Text
+                  style={[
+                    styles.inputText,
+                    !selectedDate && styles.placeholderText,
+                    // errors.birthday && styles.errorInput,
+                  ]}
+                >
+                  {selectedDate ? selectedDate : "วันเกิดเด็ก"}
+                </Text>
+              </TouchableOpacity>
+
+              {showDatePicker && (
+                <Modal
+                  transparent={true}
+                  animationType="slide"
+                  visible={showDatePicker}
+                >
+                  <View style={styles.modalBackground}>
+                    <View style={styles.pickerContainer}>
+                      <DateTimePicker
+                        value={date}
+                        mode="date"
+                        display="spinner"
+                        onChange={(event, selectedDate) => {
+                          if (selectedDate) {
+                            setDate(selectedDate);
+                          }
+                        }}
+                        textColor="black" // Text color inside the date picker
+                        themeVariant="light" // Theme variant (light or dark)
+                        locale="th"
+                      />
+                      <View style={styles.buttonsContainer}>
+                        {/* Cancel Button */}
+                        <TouchableOpacity
+                          style={styles.cancelButton}
+                          onPress={() => setShowDatePicker(false)} // Close the date picker
+                        >
+                          <Text style={styles.buttonText}>ยกเลิก</Text>
+                        </TouchableOpacity>
+                        {/* Confirm Button */}
+                        <TouchableOpacity
+                          style={styles.confirmButton}
+                          onPress={() => {
+                            handleConfirm(date); // Process the selected date
+                            setShowDatePicker(false); // Close the date picker
+                          }}
+                        >
+                          <Text style={styles.buttonText}>ยืนยัน</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </View>
+                </Modal>
+              )}
+
+              {errors.birthday && (
+                <Text style={styles.errorText}>กรุณาระบุวันเกิดเด็ก</Text>
+              )}
 
               <Text style={styles.label}>เพศ</Text>
               <View style={styles.genderContainer}>
                 <Controller
                   control={control}
                   name="gender"
+                  rules={{ required: "กรุณาเลือกเพศ" }} // Add validation rule here
                   render={({ field: { onChange, value } }) => (
                     <View style={styles.genderOptions}>
                       <TouchableOpacity
@@ -354,15 +442,13 @@ export const AddChild: FC = () => {
                     </View>
                   )}
                 />
-                <DateTimePickerModal
-                  isVisible={isDatePickerVisible}
-                  mode="date"
-                  onConfirm={handleConfirm}
-                  onCancel={hideDatePicker}
-                />
+                {/* Error Message */}
+                {errors.gender && (
+                  <Text style={styles.errorTextGender}>กรุณาระบุเพศเด็ก</Text>
+                )}
               </View>
             </View>
-          </View>
+          </LinearGradient>
         </View>
         {/* Bottom Section */}
         <View style={styles.buttonContainer}>
@@ -388,12 +474,13 @@ export const AddChild: FC = () => {
 
 const styles = StyleSheet.create({
   MiddleSection: {
-    flex: 1,
+    // flex: 1,
     width: "100%",
     height: "100%",
     justifyContent: "center",
     padding: 10,
-    paddingTop: 50,
+    // paddingTop: 50,
+    //borderWidth:2,
   },
   SafeArea: {
     flex: 1,
@@ -404,9 +491,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     minHeight: 750,
   },
-  scrollContainer: {
-    flexGrow: 1,
-  },
   Inputcontainer: {
     width: "90%",
     height: "61%",
@@ -414,8 +498,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 10,
     top: 0,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 6,
+    // borderWidth: 2,
+    marginTop: 60, // Add marginTop to prevent overlapping
   },
   container: {
+    // flex: 1,
     width: "100%",
     height: "100%",
     justifyContent: "center",
@@ -423,13 +515,9 @@ const styles = StyleSheet.create({
     // backgroundColor: "#eafff8",
     borderRadius: 20,
     padding: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 6,
-    // borderWidth: 3,
+    // borderWidth: 2,
   },
+
   input: {
     width: "100%",
     height: 50,
@@ -440,15 +528,16 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     backgroundColor: "#FFFFFF",
   },
+  inputText: {
+    left: 0,
+    top: 15,
+    //justifyContent: "center",
+  },
   label: {
     fontSize: 18,
     marginBottom: 5,
   },
   genderContainer: {
-    //flexDirection: "row",
-    flex: 1,
-    marginTop: 5,
-    marginBottom: 50,
     alignContent: "center",
     alignItems: "center",
     //backgroundColor: "#000",
@@ -478,10 +567,26 @@ const styles = StyleSheet.create({
     backgroundColor: "#4CAF50",
     marginRight: 10,
   },
+  buttonContainer: {
+    position: "absolute",
+    bottom: 25,
+    flexDirection: "row",
+    paddingHorizontal: 20,
+    width: "100%",
+    height: 45,
+    minHeight: 0,
+    padding: 0,
+  },
+  buttonText: {
+    color: "#000",
+    fontSize: 18,
+  },
+  //
   avatarContainer: {
     position: "absolute",
-    bottom: "100%",
-    //borderWidth: 3,
+    top: -50, // Adjust the top position to move it above the container
+    zIndex: 1,
+    // borderWidth: 3,
   },
   avtarFrame: {
     borderRadius: 50,
@@ -506,31 +611,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#FFD3AB",
   },
-  buttonContainer: {
-    position: "absolute",
-    bottom: 25,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    width: "90%",
-    height: 45,
-    minHeight: 0,
-    padding: 0,
-    //borderWidth: 2,
-  },
-  buttonText: {
-    color: "#000",
-    fontSize: 18,
-  },
   backButton: {
     backgroundColor: "#cce9fe",
+    left: 20,
+    right: 50,
+    padding: 8,
     borderRadius: 30,
-    width: "40%",
-    justifyContent: "center",
+    width: "25%",
     alignItems: "center",
   },
   submitButton: {
     backgroundColor: "#cce9fe",
+    left: 70,
+    right: 20,
     padding: 10,
     borderRadius: 30,
     width: "50%",
@@ -543,6 +636,13 @@ const styles = StyleSheet.create({
   errorInput: {
     borderColor: "red",
   },
+  errorTextGender: {
+    color: "red",
+    fontSize: 12,
+    top: 10,
+    // marginBottom: 5,
+    // left: 8,
+  },
   errorText: {
     color: "red",
     fontSize: 12,
@@ -551,7 +651,7 @@ const styles = StyleSheet.create({
     left: 8,
   },
   HeaderText: {
-    bottom: 75,
+    bottom: "3%",
     fontSize: 22,
     fontWeight: "bold",
   },
@@ -560,5 +660,60 @@ const styles = StyleSheet.create({
     textAlign: "left",
     left: 8,
     marginBottom: 2,
+  },
+  Datepicker: {
+    width: "100%",
+    borderWidth: 2,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalBackground: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  pickerContainer: {
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+
+  confirmButton: {
+    flex: 1,
+    backgroundColor: "#f4f4f4",
+    padding: 12,
+    borderRadius: 8,
+    marginLeft: 5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  confirmText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  buttonsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 20,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: "#f4f4f4",
+    padding: 12,
+    borderRadius: 8,
+    marginRight: 5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  placeholderText: {
+    color: "gray",
+    fontStyle: "italic",
   },
 });

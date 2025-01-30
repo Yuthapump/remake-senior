@@ -35,6 +35,7 @@ export const ChooseChild: FC = () => {
       const fetchChildDataForParent = async () => {
         try {
           const parent_id = await AsyncStorage.getItem("userId");
+          const token = await AsyncStorage.getItem("userToken");
 
           if (!parent_id) {
             console.error("Parent ID is missing.");
@@ -46,6 +47,7 @@ export const ChooseChild: FC = () => {
             {
               headers: {
                 "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
               },
             }
           );
@@ -158,7 +160,7 @@ export const ChooseChild: FC = () => {
                 </Pressable>
                 <View style={styles.profileInfo}>
                   <View style={styles.detailsName}>
-                    <Text style={styles.profileName}>{child.childName}</Text>
+                    <Text style={styles.profileName}>{child.nickName}</Text>
                   </View>
                   <View style={styles.detailsAge}>
                     <Text style={styles.profileAge}>{child.age}</Text>

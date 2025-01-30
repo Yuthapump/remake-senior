@@ -16,16 +16,22 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import { Assessment } from "./Assessment";
+
 import { LinearGradient } from "expo-linear-gradient";
+
+import {
+  usePushNotifications,
+  sendExpoPushTokenToBackend,
+} from "../../app/usePushNotifications";
 
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 // กำหนด interface สำหรับข้อมูลเด็ก
 export interface Child {
   child_id: number;
-  childName: string;
-  nickname: string;
+  firstName: string;
+  lastName: string;
+  nickName: string;
   birthday: string;
   gender: string;
   childPic: string;
@@ -77,10 +83,12 @@ export const calculateAge = (
 export const HomePR: FC = () => {
   // useState
   const navigation = useNavigation<NavigationProp<any>>();
-  const [children, setChildren] = useState<Child[]>([]); // กำหนดประเภทเป็น array ของ Child
+  const [children, setChildren] = useState<Child[]>([]);
   const [assessmentDetails, setAssessmentDetails] = useState<
     AssessmentDetails[]
   >([]);
+
+  const { expoPushToken } = usePushNotifications();
 
   // useEffect
   useFocusEffect(
@@ -88,10 +96,25 @@ export const HomePR: FC = () => {
       const fetchChildDataForParent = async () => {
         try {
           const parent_id = await AsyncStorage.getItem("userId");
+          const token = await AsyncStorage.getItem("userToken");
 
           if (!parent_id) {
             console.error("Parent ID is missing.");
             return;
+          }
+
+          if (!token) {
+            console.error("token is missing.");
+            return;
+          }
+
+          if (expoPushToken) {
+            const user_id = parseInt(parent_id, 10);
+            if (!isNaN(user_id)) {
+              await sendExpoPushTokenToBackend(expoPushToken, user_id);
+            } else {
+              console.error("Invalid user ID.");
+            }
           }
 
           const response = await fetch(
@@ -99,6 +122,7 @@ export const HomePR: FC = () => {
             {
               headers: {
                 "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
               },
             }
           );
@@ -124,7 +148,7 @@ export const HomePR: FC = () => {
                 (child: any) => child.assessments || []
               );
               setAssessmentDetails(allAssessments.flat());
-              console.log("Assessments fetched:", allAssessments);
+              // console.log("Assessments fetched:", allAssessments);
             } else {
               console.log("No children found.");
               setChildren([]);
@@ -141,7 +165,7 @@ export const HomePR: FC = () => {
       };
 
       fetchChildDataForParent();
-    }, [])
+    }, [expoPushToken])
   );
 
   // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -152,8 +176,8 @@ export const HomePR: FC = () => {
       console.log("assessmentDetails is null or undefined");
       return null; // Return null if assessmentDetails is not available
     }
-    console.log("childId:", childId);
-    console.log("assessmentDetails:", assessmentDetails);
+    // console.log("childId:", childId);
+    // console.log("assessmentDetails:", assessmentDetails);
 
     // Filter the assessment details by childId to ensure we only display relevant data
     const childAssessmentDetails = children
@@ -295,9 +319,7 @@ export const HomePR: FC = () => {
                     </Pressable>
                     <View style={styles.profileInfo}>
                       <View style={styles.detailsName}>
-                        <Text style={styles.profileName}>
-                          {child.childName}
-                        </Text>
+                        <Text style={styles.profileName}>{child.nickName}</Text>
                       </View>
                       <View style={styles.detailsAge}>
                         <Text style={styles.profileAge}>{child.age}</Text>
@@ -362,10 +384,10 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     width: 60,
     height: 60,
-    left: "80%",
+    left: "78%",
     position: "absolute",
     bottom: 0,
-    marginBottom: 100,
+    marginBottom: 110,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,

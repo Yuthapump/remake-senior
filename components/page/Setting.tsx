@@ -1,3 +1,4 @@
+// Setting.tsx
 import React, { FC, useState, useEffect } from "react";
 import {
   View,
@@ -7,6 +8,7 @@ import {
   Pressable,
   Alert,
   ImageBackground,
+  ActivityIndicator,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 import AntDesign from "react-native-vector-icons/AntDesign";
@@ -16,71 +18,75 @@ import {
   NavigationProp,
   useFocusEffect,
 } from "@react-navigation/native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export const Setting: FC = () => {
   const [userName, setUserName] = useState<string | null>(null);
   const [profilePic, setProfilePic] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const navigation = useNavigation<NavigationProp<any>>();
 
-  useFocusEffect(
-    React.useCallback(() => {
-      const fetchUserData = async () => {
-        try {
-          const storedUserName = await AsyncStorage.getItem("userName");
-          const userId = await AsyncStorage.getItem("userId");
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const storedUserName = await AsyncStorage.getItem("userName");
+        const storedProfilePic = await AsyncStorage.getItem("profilePic"); // ดึงจาก Cache
 
-          if (storedUserName) {
-            setUserName(storedUserName);
-          }
+        if (storedUserName) setUserName(storedUserName);
+        if (storedProfilePic) setProfilePic(storedProfilePic); // ใช้รูปที่ Cache ไว้ก่อน
 
-          if (userId) {
-            const response = await fetch(
-              `https://senior-test-deploy-production-1362.up.railway.app/api/profiles/get-user-profile-pic?userId=${userId}`,
-              {
-                headers: {
-                  "Content-Type": "application/json",
-                },
-              }
-            );
+        await fetchUserProfilePic(); // โหลดรูปใหม่จาก API เฉพาะเมื่อเข้าแอปครั้งแรก
+      } catch (error) {
+        console.error("Error loading user data:", error);
+      }
+    };
 
-            if (response.ok) {
-              const jsonResponse = await response.json();
+    loadUserData();
+  }, []);
 
-              if (jsonResponse.success && jsonResponse.profilePic) {
-                const imageUrl = `https://senior-test-deploy-production-1362.up.railway.app/${jsonResponse.profilePic}`; // บีบรูปเป็น uri
-                setProfilePic(imageUrl);
-              } else {
-                setProfilePic(null);
-              }
-            } else {
-              console.error(
-                "HTTP Error: ",
-                response.status,
-                response.statusText
-              );
-            }
-          }
-        } catch (error) {
-          console.error("Error retrieving user data:", error);
-          setProfilePic(null);
+  const fetchUserProfilePic = async () => {
+    try {
+      setIsLoading(true);
+      const userId = await AsyncStorage.getItem("userId");
+      const token = await AsyncStorage.getItem("userToken");
+
+      if (!userId) throw new Error("No user ID found");
+
+      const response = await fetch(
+        `https://senior-test-deploy-production-1362.up.railway.app/api/profiles/get-user-profile-pic?userId=${userId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         }
-      };
+      );
 
-      fetchUserData();
-    }, []) // คำสั่ง callback ของ useFocusEffect
-  );
+      if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
+      const jsonResponse = await response.json();
+
+      if (jsonResponse.success && jsonResponse.profilePic) {
+        const imageUrl = `https://senior-test-deploy-production-1362.up.railway.app/${jsonResponse.profilePic}`;
+        setProfilePic(imageUrl);
+        await AsyncStorage.setItem("profilePic", imageUrl); // Cache รูปใหม่
+      }
+    } catch (error) {
+      console.error("Failed to fetch profile picture:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem("userToken");
       await AsyncStorage.removeItem("userRole");
       await AsyncStorage.removeItem("userId");
+      await AsyncStorage.removeItem("profilePic"); // เคลียร์รูปที่ Cache
       navigation.reset({
         index: 0,
         routes: [{ name: "welcome" }],
       });
-      console.log("Logout success!");
     } catch (error) {
       Alert.alert("Logout Failed", "An error occurred while logging out");
     }
@@ -100,16 +106,24 @@ export const Setting: FC = () => {
         <View style={styles.sectionContainer}>
           {/* Profile Section */}
           <View style={styles.profileContainer}>
-            <Image
-              source={
-                profilePic
-                  ? { uri: profilePic }
-                  : require("../../assets/icons/User_Icon.png")
-              }
-              style={styles.avatar}
-            />
-            {/* username Section */}
+            {isLoading ? (
+              <Image
+                source={require("../../assets/loading/loading-profile.gif")}
+                style={styles.avatar}
+              />
+            ) : (
+              <Image
+                source={
+                  profilePic
+                    ? { uri: profilePic }
+                    : require("../../assets/icons/User_Icon.png")
+                }
+                style={styles.avatar}
+              />
+            )}
           </View>
+
+          {/* username Section */}
           <View style={styles.usernameSection}>
             <View style={styles.usernameContainer}>
               <Text style={styles.username}>{userName}</Text>
@@ -169,10 +183,10 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: "center",
     width: "100%",
-    height: "88%",
+    height: "80%",
     padding: 20,
     paddingTop: 130,
-    //borderWidth: 3,
+    // borderWidth: 3,
   },
   profileContainer: {
     position: "absolute",
@@ -252,14 +266,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "bold",
   },
+
   logoutButton: {
     width: "50%",
-    marginTop: 15,
+    // marginTop: 15,
     paddingVertical: 13,
     borderRadius: 25,
     backgroundColor: "#ff0000",
     alignItems: "center",
-    //borderWidth: 1,
+    borderWidth: 1,
   },
   logoutText: {
     color: "#fff",
