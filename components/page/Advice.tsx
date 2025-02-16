@@ -1,4 +1,6 @@
 // Advice.tsx
+
+// === ( Import ) ===
 import React, { FC, useState, useEffect } from "react";
 import {
   View,
@@ -7,13 +9,19 @@ import {
   FlatList,
   TouchableOpacity,
   ImageBackground,
+  Alert,
+  Linking,
 } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { LoadingScreenAdvice } from "../LoadingScreen";
 
+// === ( HospitalData ) ===
 interface HospitalData {
+  latitude: any;
+  longitude: any;
   id: string;
   name: string;
   address: string;
@@ -26,58 +34,87 @@ export const Advice: FC = () => {
   const [location, setLocation] =
     useState<Location.LocationObjectCoords | null>(null);
   const [hospitals, setHospitals] = useState<HospitalData[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     requestLocationPermissionAndWatchPosition();
   }, []);
 
   const requestLocationPermissionAndWatchPosition = async () => {
-    let { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== "granted") {
-      console.error("Permission to access location was denied");
-      return;
-    }
-
-    Location.watchPositionAsync(
-      {
-        accuracy: Location.Accuracy.High,
-        timeInterval: 5000,
-        distanceInterval: 10,
-      },
-      (newLocation) => {
-        setLocation(newLocation.coords);
-        fetchNearbyHospitals(newLocation.coords);
+    try {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          "Permission Denied",
+          "กรุณาเปิดการใช้ตำแหน่งใน Settings เพื่อใช้งานแผนที่",
+          [{ text: "OK", onPress: () => Linking.openSettings() }]
+        );
+        return;
       }
-    );
+
+      await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.High,
+          timeInterval: 5000,
+          distanceInterval: 10,
+        },
+        (newLocation) => {
+          setLocation(newLocation.coords);
+          fetchNearbyHospitals(newLocation.coords);
+        }
+      );
+    } catch (error) {
+      console.error("Error requesting location permission:", error);
+    }
   };
 
   const fetchNearbyHospitals = async (
     coords: Location.LocationObjectCoords
   ) => {
+    setLoading(true);
     const url = `https://api.longdo.com/POIService/json/search?key=2b8d930d7d6a9dbac6b470669ad7319c&lat=${coords.latitude}&lon=${coords.longitude}&tag=hospital`;
 
     try {
+      console.log("Fetching hospitals from:", url);
       const response = await fetch(url);
-      const data = await response.json();
 
+      if (!response.ok) {
+        throw new Error(`HTTP Error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
       console.log("Longdo API Response: ", data);
 
-      if (data && data.data) {
-        const hospitals = data.data.map((item: HospitalData) => ({
-          id: item.id,
-          name: item.name,
-          address: item.address,
-          latitude: item.lat,
-          longitude: item.lon,
-          //rating: item.rating || 4.0,
-        }));
+      if (data && data.data && Array.isArray(data.data)) {
+        const hospitals = data.data
+          .filter((item: { lat: any; lon: any }) => item.lat && item.lon)
+          .map(
+            (item: {
+              id: { toString: () => any };
+              name: any;
+              address: any;
+              lat: any;
+              lon: any;
+            }) => ({
+              id: item.id.toString(),
+              name: item.name || "Unknown",
+              address: item.address || "No address available",
+              latitude: item.lat,
+              longitude: item.lon,
+            })
+          );
 
-        setHospitals(hospitals);
+        setTimeout(() => {
+          setHospitals(hospitals);
+          setLoading(false);
+        }, 1000); // set delay
       } else {
-        console.error("No data found or API response is invalid.");
+        console.error("Invalid API response format");
+        setLoading(false);
       }
     } catch (error) {
       console.error("Error fetching hospitals:", error);
+      setLoading(false);
     }
   };
 
@@ -86,6 +123,11 @@ export const Advice: FC = () => {
       fetchNearbyHospitals(location);
     }
   };
+
+  // === ( LoadingScreen ) ===
+  if (loading) {
+    return <LoadingScreenAdvice />;
+  }
 
   return (
     <ImageBackground
@@ -96,29 +138,39 @@ export const Advice: FC = () => {
         {location ? (
           <MapView
             style={styles.map}
-            initialRegion={{
-              latitude: location.latitude,
-              longitude: location.longitude,
-              latitudeDelta: 0.05,
-              longitudeDelta: 0.05,
-            }}
+            region={
+              location
+                ? {
+                    latitude: location.latitude,
+                    longitude: location.longitude,
+                    latitudeDelta: 0.05,
+                    longitudeDelta: 0.05,
+                  }
+                : undefined
+            }
           >
-            {hospitals.map((hospital) => {
-              if (hospital.lat && hospital.lat) {
-                return (
-                  <Marker
-                    key={hospital.id}
-                    coordinate={{
-                      latitude: hospital.lat,
-                      longitude: hospital.lon,
-                    }}
-                    title={hospital.name}
-                    description={hospital.address}
-                  />
-                );
-              }
-              return null; // คืนค่า null ถ้าค่าพิกัดไม่ถูกต้อง
-            })}
+            {hospitals.length > 0
+              ? hospitals
+                  .map((hospital) => {
+                    if (!hospital.latitude || !hospital.longitude) {
+                      console.warn("Invalid hospital coordinates:", hospital);
+                      return null;
+                    }
+
+                    return (
+                      <Marker
+                        key={hospital.id}
+                        coordinate={{
+                          latitude: hospital.latitude,
+                          longitude: hospital.longitude,
+                        }}
+                        title={hospital.name}
+                        description={hospital.address}
+                      />
+                    );
+                  })
+                  .filter((marker) => marker !== null)
+              : []}
           </MapView>
         ) : (
           <Text>กำลังโหลดแผนที่...</Text>

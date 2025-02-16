@@ -22,30 +22,29 @@ import {
 export const Setting: FC = () => {
   const [userName, setUserName] = useState<string | null>(null);
   const [profilePic, setProfilePic] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const navigation = useNavigation<NavigationProp<any>>();
 
-  useEffect(() => {
-    const loadUserData = async () => {
-      try {
-        const storedUserName = await AsyncStorage.getItem("userName");
-        const storedProfilePic = await AsyncStorage.getItem("profilePic"); // ดึงจาก Cache
+  useFocusEffect(
+    React.useCallback(() => {
+      const loadUserData = async () => {
+        try {
+          const storedUserName = await AsyncStorage.getItem("userName");
+          const storedProfilePic = await AsyncStorage.getItem("profilePic");
 
-        if (storedUserName) setUserName(storedUserName);
-        if (storedProfilePic) setProfilePic(storedProfilePic); // ใช้รูปที่ Cache ไว้ก่อน
+          if (storedUserName) setUserName(storedUserName);
+          if (storedProfilePic) setProfilePic(storedProfilePic);
 
-        await fetchUserProfilePic(); // โหลดรูปใหม่จาก API เฉพาะเมื่อเข้าแอปครั้งแรก
-      } catch (error) {
-        console.error("Error loading user data:", error);
-      }
-    };
-
-    loadUserData();
-  }, []);
+          await fetchUserProfilePic();
+        } catch (error) {
+          console.error("Error loading user data:", error);
+        }
+      };
+      loadUserData();
+    }, [])
+  );
 
   const fetchUserProfilePic = async () => {
     try {
-      setIsLoading(true);
       const userId = await AsyncStorage.getItem("userId");
       const token = await AsyncStorage.getItem("userToken");
 
@@ -72,8 +71,6 @@ export const Setting: FC = () => {
       }
     } catch (error) {
       console.error("Failed to fetch profile picture:", error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -106,21 +103,14 @@ export const Setting: FC = () => {
         <View style={styles.sectionContainer}>
           {/* Profile Section */}
           <View style={styles.profileContainer}>
-            {isLoading ? (
-              <Image
-                source={require("../../assets/loading/loading-profile.gif")}
-                style={styles.avatar}
-              />
-            ) : (
-              <Image
-                source={
-                  profilePic
-                    ? { uri: profilePic }
-                    : require("../../assets/icons/User_Icon.png")
-                }
-                style={styles.avatar}
-              />
-            )}
+            <Image
+              source={
+                profilePic
+                  ? { uri: profilePic }
+                  : require("../../assets/icons/User_Icon.png")
+              }
+              style={styles.avatar}
+            />
           </View>
 
           {/* username Section */}
@@ -293,5 +283,3 @@ const styles = StyleSheet.create({
     left: 100,
   },
 });
-
-//export default Setting;

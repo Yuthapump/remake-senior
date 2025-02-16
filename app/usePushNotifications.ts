@@ -17,8 +17,10 @@ export interface PushNotificationState {
   ) => {
     try {
         const token = await AsyncStorage.getItem("userToken");
-        console.log("user_id: ", user_id)
-        console.log("expoPushtoken: ", expoPushToken.data)
+      if (!token) {
+        console.error("No token found in storage");
+        return;
+      }
       const response = await fetch(
         `https://senior-test-deploy-production-1362.up.railway.app/api/notifications/save-push-token`,
         {

@@ -5,12 +5,10 @@ import { LinearGradient } from "expo-linear-gradient";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import Entypo from "@expo/vector-icons/Entypo";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
 
 import { HomePR } from "./page/HomePR";
 import { Setting } from "./page/Setting";
-import { Notificate } from "./page/TestNotificate";
-// import { Notificate } from "./page/Notificate";
+import { Notificate } from "./page/Notificate";
 import { Advice } from "./page/Advice";
 
 // Define your custom icon paths

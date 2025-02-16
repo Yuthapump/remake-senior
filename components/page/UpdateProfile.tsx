@@ -48,7 +48,7 @@ export const UpdateProfile: FC = () => {
         const userId = await AsyncStorage.getItem("userId");
         if (userId) {
           const response = await fetch(
-            `https://senior-test-deploy.onrender.com/api/profile/get-user-profile-pic?userId=${userId}`,
+            `https://senior-test-deploy-production-1362.up.railway.app/api/profiles/get-user-profile-pic?userId=${userId}`,
             {
               headers: {
                 "Content-Type": "application/json",
@@ -60,9 +60,9 @@ export const UpdateProfile: FC = () => {
           if (response.ok) {
             const jsonResponse = await response.json();
             if (jsonResponse.success && jsonResponse.profilePic) {
-              const imageUrl = `https://senior-test-deploy.onrender.com/${jsonResponse.profilePic}`;
-              setProfilePic(imageUrl);
-              await AsyncStorage.setItem("profilePic", imageUrl);
+              setProfilePic(
+                `https://senior-test-deploy-production-1362.up.railway.app/${jsonResponse.profilePic}`
+              );
             }
           } else {
             console.error("HTTP Error:", response.status, response.statusText);
@@ -141,7 +141,8 @@ export const UpdateProfile: FC = () => {
   // ฟังก์ชันสำหรับอัปเดตโปรไฟล์
   const handleUpdate = async () => {
     const userId = await AsyncStorage.getItem("userId");
-    console.log("userId: ", userId);
+    const token = await AsyncStorage.getItem("userToken");
+    console.log("user_id: ", userId);
     console.log("profilePic:", profilePic);
 
     try {
@@ -165,7 +166,7 @@ export const UpdateProfile: FC = () => {
 
       // Append userId
       if (userId) {
-        formData.append("userId", userId);
+        formData.append("user_id", userId);
       } else {
         throw new Error("User ID is missing");
       }
@@ -186,9 +187,13 @@ export const UpdateProfile: FC = () => {
 
       // ส่งคำขอไปยัง API
       const response = await fetch(
-        "https://senior-test-deploy.onrender.com/api/profile/update-profile-pic",
+        "https://senior-test-deploy-production-1362.up.railway.app/api/profiles/update-profile",
         {
           method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           body: formData,
         }
       );
@@ -222,7 +227,7 @@ export const UpdateProfile: FC = () => {
           "Profile Updated",
           "Your profile information has been updated."
         );
-        navigation.goBack(); // กลับไปยังหน้าก่อนหน้า
+        navigation.goBack();
       } else {
         console.log("Failed to update profile:", jsonResponse);
         Alert.alert("Error", "Failed to update profile.");
@@ -241,103 +246,105 @@ export const UpdateProfile: FC = () => {
   };
 
   return (
-    <SafeAreaProvider>
-      <ImageBackground
-        source={require("../../assets/background/bg2.png")}
-        style={styles.container}
-      >
-        {/* top section */}
-        <Text style={styles.header}></Text>
-        {/* mid section */}
-        <View style={styles.avtarFrame}>
-          {isLoading ? (
-            <Image
-              source={require("../../assets/loading/loading-profile.gif")}
-              style={styles.avatar}
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <SafeAreaProvider>
+        <ImageBackground
+          source={require("../../assets/background/bg2.png")}
+          style={styles.container}
+        >
+          {/* top section */}
+          <Text style={styles.header}></Text>
+          {/* mid section */}
+          <View style={styles.avtarFrame}>
+            {isLoading ? (
+              <Image
+                source={require("../../assets/loading/loading-profile.gif")}
+                style={styles.avatar}
+              />
+            ) : (
+              <Image
+                source={
+                  profilePic
+                    ? { uri: profilePic }
+                    : require("../../assets/icons/User_Icon.png")
+                }
+                style={styles.avatar}
+              />
+            )}
+            <Pressable style={styles.addIconSection} onPress={selectImage}>
+              <Image
+                source={require("../../assets/icons/add.png")}
+                style={styles.addIcon}
+              />
+            </Pressable>
+          </View>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              value={userName}
+              onChangeText={setUserName}
+              placeholder="Username"
             />
-          ) : (
-            <Image
-              source={
-                profilePic
-                  ? { uri: profilePic }
-                  : require("../../assets/icons/User_Icon.png")
-              }
-              style={styles.avatar}
-            />
-          )}
-          <Pressable style={styles.addIconSection} onPress={selectImage}>
-            <Image
-              source={require("../../assets/icons/add.png")}
-              style={styles.addIcon}
-            />
-          </Pressable>
-        </View>
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            value={userName}
-            onChangeText={setUserName}
-            placeholder="Username"
-            editable={isEditable} // เปิด/ปิดการแก้ไข
-          />
-          <Pressable
-            style={[styles.editIconSection]} // เปลี่ยนสไตล์ถ้าปุ่มถูกปิดการใช้งาน}
-            onPress={() => setIsEditable(!isEditable)}
-          >
-            <Image
-              source={require("../../assets/icons/editicon.png")}
-              style={styles.editIcon}
-            />
-          </Pressable>
-        </View>
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            value={email}
-            onChangeText={setEmail}
-            placeholder="Email"
-            keyboardType="email-address"
-          />
-          <Pressable style={styles.editIconSection} onPress={selectImage}>
-            <Image
-              source={require("../../assets/icons/editicon.png")}
-              style={styles.editIcon}
-            />
-          </Pressable>
-        </View>
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            value={phoneNumber}
-            onChangeText={setPhoneNumber}
-            placeholder="Phone Number"
-            keyboardType="phone-pad"
-          />
-          <Pressable style={styles.editIconSection} onPress={selectImage}>
-            <Image
-              source={require("../../assets/icons/editicon.png")}
-              style={styles.editIcon}
-            />
-          </Pressable>
-        </View>
-        <Pressable onPress={handleUpdate}>
-          <LinearGradient colors={["#DDE6FF", "#FFFFFF"]} style={styles.button}>
-            <View>
-              <Text style={styles.buttonText}>Update Profile</Text>
+            <View style={[styles.editIconSection]}>
+              <Image
+                source={require("../../assets/icons/editicon.png")}
+                style={styles.editIcon}
+              />
             </View>
-          </LinearGradient>
-        </Pressable>
-      </ImageBackground>
-      {/* bottom section */}
-      <View style={styles.buttonContainer}>
-        <Pressable style={styles.backButton} onPress={goBack}>
-          <Image
-            source={require("../../assets/icons/back.png")}
-            style={styles.backIcon}
-          />
-        </Pressable>
-      </View>
-    </SafeAreaProvider>
+          </View>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              value={email}
+              onChangeText={setEmail}
+              placeholder="Email"
+              keyboardType="email-address"
+            />
+            <View style={styles.editIconSection}>
+              <Image
+                source={require("../../assets/icons/editicon.png")}
+                style={styles.editIcon}
+              />
+            </View>
+          </View>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              value={phoneNumber}
+              onChangeText={setPhoneNumber}
+              placeholder="Phone Number"
+              keyboardType="phone-pad"
+            />
+            <View style={styles.editIconSection}>
+              <Image
+                source={require("../../assets/icons/editicon.png")}
+                style={styles.editIcon}
+              />
+            </View>
+          </View>
+          {/* update button */}
+          <Pressable onPress={handleUpdate}>
+            <LinearGradient
+              colors={["#DDE6FF", "#FFFFFF"]}
+              style={styles.button}
+            >
+              <View>
+                <Text style={styles.buttonText}>Update Profile</Text>
+              </View>
+            </LinearGradient>
+          </Pressable>
+        </ImageBackground>
+        {/* bottom section */}
+        <View style={styles.buttonContainer}>
+          <Pressable style={styles.backButton} onPress={goBack}>
+            <Image
+              source={require("../../assets/icons/back.png")}
+              style={styles.backIcon}
+            />
+          </Pressable>
+        </View>
+      </SafeAreaProvider>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -366,17 +373,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   button: {
-    // backgroundColor: "#cce9fe",
-    // padding: 0,
     borderRadius: 20,
-    // display: "flex",
-    // flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    // paddingVertical: 11,
-    // paddingHorizontal: 67,
-    // gap: 10,
-    // position: "absolute",
     width: 240,
     height: 40,
     marginTop: 100,
@@ -430,7 +429,7 @@ const styles = StyleSheet.create({
   avtarFrame: {
     borderRadius: 45,
     height: "13%",
-    borderWidth: 2,
+    // borderWidth: 2,
   },
   addIconSection: {
     position: "absolute",

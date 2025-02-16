@@ -47,11 +47,7 @@ export const Login: FC = () => {
 
   const dispatch = useDispatch();
 
-  // navigate to Register Screen
-  const whenGotoRegister = () => {
-    navigation.navigate("register");
-  };
-
+  // === ( Handle Login API Call ) ===
   const validatePass: SubmitHandler<LoginModel> = async (form) => {
     console.log(form);
     // send form data to api server
@@ -147,6 +143,18 @@ export const Login: FC = () => {
     }
   };
 
+  //================================================================================================
+  // ==== Navigation Functions ====
+  const whenGotoRegister = () => {
+    navigation.navigate("register");
+  };
+
+  const whenForgotPassword = () => {
+    navigation.navigate("forgetPassword");
+  };
+
+  //================================================================================================
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <ImageBackground
@@ -172,13 +180,12 @@ export const Login: FC = () => {
               />
             </View>
           </View>
-          <Pressable>
+          <Pressable onPress={whenForgotPassword}>
             <Text style={styles.forgotPassword}>Forgot Password?</Text>
           </Pressable>
           <View style={styles.buttonContainer}>
             <Pressable
               style={styles.signinButton}
-              //onPress={whenGotoHome} // For Test
               onPress={handleSubmit(validatePass)}
             >
               <Text style={styles.buttonText}>SIGN IN</Text>
@@ -218,7 +225,7 @@ const styles = StyleSheet.create({
   },
   form: {
     width: "80%",
-    alignItems: "center", // Center the form elements
+    alignItems: "center",
     marginVertical: 20,
   },
   forgotPassword: {

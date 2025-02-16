@@ -24,6 +24,8 @@ import {
   sendExpoPushTokenToBackend,
 } from "../../app/usePushNotifications";
 
+import { LoadingScreenBaby } from "../LoadingScreen";
+
 // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 // กำหนด interface สำหรับข้อมูลเด็ก
@@ -87,6 +89,7 @@ export const HomePR: FC = () => {
   const [assessmentDetails, setAssessmentDetails] = useState<
     AssessmentDetails[]
   >([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const { expoPushToken } = usePushNotifications();
 
@@ -117,6 +120,7 @@ export const HomePR: FC = () => {
             }
           }
 
+          setLoading(true);
           const response = await fetch(
             `https://senior-test-deploy-production-1362.up.railway.app/api/childs/get-child-data?parent_id=${parent_id}`,
             {
@@ -129,6 +133,7 @@ export const HomePR: FC = () => {
 
           if (response.ok) {
             const jsonResponse = await response.json();
+            console.log("Fetch child data successfully");
 
             if (jsonResponse.children) {
               const updatedChildren: Child[] = jsonResponse.children.map(
@@ -142,7 +147,11 @@ export const HomePR: FC = () => {
                   };
                 }
               );
-              setChildren(updatedChildren);
+              // setChildren(updatedChildren);
+              setTimeout(() => {
+                setChildren(updatedChildren);
+                setLoading(false);
+              }, 100); // set delay
 
               const allAssessments = jsonResponse.children.map(
                 (child: any) => child.assessments || []
@@ -153,20 +162,28 @@ export const HomePR: FC = () => {
               console.log("No children found.");
               setChildren([]);
               setAssessmentDetails([]);
+              setLoading(false);
             }
           } else {
             console.error(
               `Error fetching data: ${response.status} ${response.statusText}`
             );
+            setLoading(false);
           }
         } catch (error) {
           console.error("Error fetching child data:", error);
+          setLoading(false);
         }
       };
 
       fetchChildDataForParent();
     }, [expoPushToken])
   );
+
+  // === ( LoadingScreen ) ===
+  if (loading) {
+    return <LoadingScreenBaby />;
+  }
 
   // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   // renderAssessmentState
@@ -369,7 +386,7 @@ const styles = StyleSheet.create({
     // resizeMode: "cover",
     // height: 850,
     height: "100%",
-    borderWidth: 2,
+    // borderWidth: 2,
   },
   ScrollView: {
     width: "100%",

@@ -225,7 +225,7 @@ export const Training: FC = () => {
           <Image source={{ uri: child.childPic }} style={styles.profileIcon} />
           <View style={styles.profileInfo}>
             <View style={styles.detailsName}>
-              <Text style={styles.profileName}>{child.childName}</Text>
+              <Text style={styles.profileName}>{child.nickName}</Text>
             </View>
             <View style={styles.detailsAge}>
               <Text style={styles.profileAge}>{child.age}</Text>

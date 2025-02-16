@@ -14,6 +14,7 @@ import {
   useFocusEffect,
 } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LoadingScreenBaby } from "../LoadingScreen";
 
 // import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
@@ -29,6 +30,7 @@ export const ChooseChild: FC = () => {
   const [assessmentDetails, setAssessmentDetails] = useState<
     AssessmentDetails[]
   >([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -42,6 +44,7 @@ export const ChooseChild: FC = () => {
             return;
           }
 
+          setLoading(true);
           const response = await fetch(
             `https://senior-test-deploy-production-1362.up.railway.app/api/childs/get-child-data?parent_id=${parent_id}`,
             {
@@ -67,7 +70,11 @@ export const ChooseChild: FC = () => {
                   };
                 }
               );
-              setChildren(updatedChildren);
+
+              setTimeout(() => {
+                setChildren(updatedChildren);
+                setLoading(false);
+              }, 100); // set delay
 
               const allAssessments = jsonResponse.children.map(
                 (child: any) => child.assessments || []
@@ -78,20 +85,28 @@ export const ChooseChild: FC = () => {
               console.log("No children found.");
               setChildren([]);
               setAssessmentDetails([]);
+              setLoading(false);
             }
           } else {
             console.error(
               `Error fetching data: ${response.status} ${response.statusText}`
             );
+            setLoading(false);
           }
         } catch (error) {
           console.error("Error fetching child data:", error);
+          setLoading(false);
         }
       };
 
       fetchChildDataForParent();
     }, [])
   );
+
+  // === ( LoadingScreen ) ===
+  if (loading) {
+    return <LoadingScreenBaby />;
+  }
 
   const whenGotoAddChild = () => {
     navigation.navigate("addchild");
@@ -109,6 +124,7 @@ export const ChooseChild: FC = () => {
   const goBack = () => {
     navigation.goBack();
   };
+
   return (
     <ImageBackground
       source={require("../../assets/background/bg2.png")}
@@ -326,10 +342,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   buttonContainer: {
-    //position: "absolute",
-    flexDirection: "row", // จัดปุ่มให้อยู่ในแถวเดียวกัน
-    //justifyContent: "space-around", // จัดปุ่มให้มีระยะห่างเท่ากัน
-    paddingHorizontal: 20, // ระยะห่างด้านข้างของปุ่ม
+    flexDirection: "row",
+
+    paddingHorizontal: 20,
     width: "70%",
     alignItems: "center",
   },

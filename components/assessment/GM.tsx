@@ -18,6 +18,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { Child } from "../page/HomePR";
+import { LoadingScreenAdvice, LoadingScreenSearchfile } from "../LoadingScreen";
 
 type GMRouteProp = RouteProp<{ assessment: { child: Child } }, "assessment">;
 
@@ -107,16 +108,21 @@ export const GM: FC = () => {
             setAssessmentInsert({
               assessment_id: data.data.assessment_id,
             });
+            setTimeout(() => {
+              setLoading(false);
+            }, 1000); // set delay
             // console.log("AssessmentInsert after set:", data.data.assessment_id);
           } else {
             setError(
               `Failed to fetch assessment data. Status: ${response.status}`
             );
+            setLoading(false);
           }
         } catch (error) {
           setError(
             "Error fetching assessment data. Please check your connection."
           );
+          setLoading(false);
           console.error("Error fetching assessment data:", error);
         } finally {
           setLoading(false);
@@ -237,6 +243,7 @@ export const GM: FC = () => {
     assessment_id: number,
     user_id: number
   ) => {
+    setLoading(true);
     try {
       const token = await AsyncStorage.getItem("userToken");
       const response = await fetch(
@@ -261,6 +268,9 @@ export const GM: FC = () => {
         setAssessmentInsert({
           assessment_id: data.next_assessment.assessment_id,
         });
+        setTimeout(() => {
+          setLoading(false);
+        }, 250); // set delay
 
         return data;
       } else {
@@ -268,6 +278,8 @@ export const GM: FC = () => {
       }
     } catch (error) {
       console.error("Error fetching next assessment:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -303,9 +315,10 @@ export const GM: FC = () => {
       </View>
 
       {/* Mid Section */}
+
       <View style={styles.midSection}>
         {loading ? (
-          <Text>กำลังโหลด...</Text>
+          <LoadingScreenSearchfile />
         ) : error ? (
           <Text style={styles.errorText}>{error}</Text>
         ) : (
@@ -431,6 +444,9 @@ const styles = StyleSheet.create({
     //justifyContent: "center",
     alignItems: "center",
   },
+  secion: {
+    position: "absolute",
+  },
 
   topSection: {
     //flex: 1,
@@ -440,9 +456,10 @@ const styles = StyleSheet.create({
     paddingTop: 55,
   },
   midSection: {
-    //flex: 1,
+    // flex: 1,
     width: 350,
     height: "auto",
+    minHeight: 300,
     marginTop: 0,
     paddingBottom: 5,
     borderRadius: 30,

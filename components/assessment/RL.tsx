@@ -18,6 +18,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { Child } from "../page/HomePR";
+import { LoadingScreenSearchfile } from "../LoadingScreen";
 
 type GMRouteProp = RouteProp<{ assessment: { child: Child } }, "assessment">;
 
@@ -237,6 +238,7 @@ export const RL: FC = () => {
     assessment_id: number,
     user_id: number
   ) => {
+    setLoading(true);
     try {
       const token = await AsyncStorage.getItem("userToken");
       const response = await fetch(
@@ -261,6 +263,9 @@ export const RL: FC = () => {
         setAssessmentInsert({
           assessment_id: data.next_assessment.assessment_id,
         });
+        setTimeout(() => {
+          setLoading(false);
+        }, 500); // set delay
 
         return data;
       } else {
@@ -268,6 +273,8 @@ export const RL: FC = () => {
       }
     } catch (error) {
       console.error("Error fetching next assessment:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -305,7 +312,7 @@ export const RL: FC = () => {
       {/* Mid Section */}
       <View style={styles.midSection}>
         {loading ? (
-          <Text>กำลังโหลด...</Text>
+          <LoadingScreenSearchfile />
         ) : error ? (
           <Text style={styles.errorText}>{error}</Text>
         ) : (
@@ -443,6 +450,7 @@ const styles = StyleSheet.create({
     //flex: 1,
     width: 350,
     height: "auto",
+    minHeight: 300,
     marginTop: 0,
     paddingBottom: 5,
     borderRadius: 30,

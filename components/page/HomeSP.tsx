@@ -217,7 +217,7 @@ export const HomeSP: FC = () => {
           <View style={styles.roomInfo}>
             <View style={styles.card}>
               <Image
-                source={require("../../assets/image/chicken.png")}
+                source={require("../../assets/images/chicken.png")}
                 style={styles.icon}
               />
               <Text style={styles.cardText}>อนุบาล ก.ไก่</Text>
@@ -225,7 +225,7 @@ export const HomeSP: FC = () => {
             </View>
             <View style={styles.card}>
               <Image
-                source={require("../../assets/image/grape.jpg")}
+                source={require("../../assets/images/grape.jpg")}
                 style={styles.icon}
               />
               <Text style={styles.cardText}>อนุบาล อ.องุ่น</Text>
@@ -233,7 +233,7 @@ export const HomeSP: FC = () => {
             </View>
             <View style={styles.card}>
               <Image
-                source={require("../../assets/image/banana.png")}
+                source={require("../../assets/images/banana.png")}
                 style={styles.icon}
               />
               <Text style={styles.cardText}>อนุบาล ค.คน</Text>
@@ -308,13 +308,13 @@ export const HomeSP: FC = () => {
       <View style={styles.bottomSection}>
         <View style={styles.graphContainer}>
           <Image
-            source={require("../../assets/image/bar_chart.png")}
+            source={require("../../assets/images/bar_chart.png")}
             style={styles.graphImage}
           />
         </View>
         <View style={styles.pieChartContainer}>
           <Image
-            source={require("../../assets/image/pie_chart.png")}
+            source={require("../../assets/images/pie_chart.png")}
             style={styles.pieChartImage}
           />
         </View>

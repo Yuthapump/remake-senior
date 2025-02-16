@@ -15,20 +15,21 @@ import {
   TouchableOpacity,
 } from "react-native";
 
-// Navigation
+// === ( Navigation ) ===
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 
-// Form Handling
+// === ( Form Handling ) ===
 import { z } from "zod";
 import { useForm, SubmitHandler, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-// Components
+// === ( Components ) ===
 import { Picker } from "@react-native-picker/picker";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import DropDownPicker from "react-native-dropdown-picker";
 
-// Define Validation Schema
+// === ( Define Validation Schema ) ===
 export const RegisterSchema = z.object({
   userName: z
     .string()
@@ -50,15 +51,23 @@ export const RegisterSchema = z.object({
   agree: z.boolean().default(false),
 });
 
-// Type Definitions
+// === (Type Definitions) ===
 export type RegisterModel = z.infer<typeof RegisterSchema>;
 
-// Component Definition
+// === (Component Definition) ===
 export const Register: FC = () => {
+  // === (Component Definition) ===
+  const [open, setOpen] = useState(false);
+  // const [value, setValue] = useState(null);
+  const [items, setItems] = useState([
+    { label: "Parent", value: "parent" },
+    { label: "Supervisor", value: "supervisor" },
+    { label: "Admin", value: "admin" },
+  ]);
   // Navigation Hook
   const navigation = useNavigation<NavigationProp<any>>();
 
-  // Form Handling
+  // === (Form Handling) ===
   const {
     reset,
     control,
@@ -68,14 +77,8 @@ export const Register: FC = () => {
   } = useForm<RegisterModel>({
     resolver: zodResolver(RegisterSchema),
   });
-  const [selectedRole, setSelectedRole] = useState<string>("Select Role");
-  const [showPicker, setShowPicker] = useState<boolean>(false); // Manage Modal visibility
 
-  // // Function to capitalize the first letter of the role
-  // const capitalizeRole = (role: string) => {
-  //   return role.charAt(0).toUpperCase() + role.slice(1);
-  // };
-
+  // === ( Form Submit Handler ) ===
   const validatePass: SubmitHandler<RegisterModel> = async (form) => {
     console.log("validatePass Form data:", form); // Check Form
     try {
@@ -165,7 +168,7 @@ export const Register: FC = () => {
     }
   };
 
-  // Component
+  // === ( Component ) ===
   const handleSignUp = (data: RegisterModel) => {
     console.log("Form data:", data); // Check Form
     // เมื่อผู้ใช้กด "Sign Up", นำทางไปยังหน้า Privacy และส่งฟังก์ชัน validatePass ไปด้วย
@@ -210,6 +213,8 @@ export const Register: FC = () => {
                 </View>
               )}
             />
+
+            {/* Email Input */}
             <Text style={styles.OnInputText}>อีเมล</Text>
             <Controller
               control={control}
@@ -229,6 +234,8 @@ export const Register: FC = () => {
                 </View>
               )}
             />
+
+            {/* Password Input */}
             <Text style={styles.OnInputText}>รหัสผ่าน</Text>
             <Controller
               control={control}
@@ -251,6 +258,8 @@ export const Register: FC = () => {
                 </View>
               )}
             />
+
+            {/* Phone Number Input */}
             <Text style={styles.OnInputText}>หมายเลขโทรศัพท์</Text>
             <Controller
               control={control}
@@ -273,57 +282,42 @@ export const Register: FC = () => {
               )}
             />
 
-            <View>
+            {/* Role Picker */}
+            <View style={{ zIndex: 1000 }}>
               <Text style={styles.OnInputText}>Select Role</Text>
-
-              {/* Platform-specific Picker */}
-              {Platform.OS === "ios" ? (
-                // iOS: ใช้ Picker โดยตรง (ไม่ใช้ Modal)
-                <Controller
-                  control={control}
-                  name="role"
-                  render={({ field: { onChange, value } }) => (
-                    <Picker
-                      selectedValue={value}
-                      style={styles.picker}
-                      onValueChange={(itemValue) => onChange(itemValue)} // อัปเดตค่าที่เลือก
-                    >
-                      <Picker.Item
-                        label="Select Role"
-                        value=""
-                        enabled={false}
-                      />
-                      <Picker.Item label="Parent" value="parent" />
-                      <Picker.Item label="Supervisor" value="supervisor" />
-                      <Picker.Item label="Admin" value="admin" />
-                    </Picker>
-                  )}
-                />
-              ) : (
-                // Android: Picker แบบเดิม
-                <Controller
-                  control={control}
-                  name="role"
-                  render={({ field: { onChange, value } }) => (
-                    <Picker
-                      selectedValue={value}
-                      style={styles.picker}
-                      onValueChange={(itemValue) => onChange(itemValue)} // อัปเดตค่าที่เลือก
-                    >
-                      <Picker.Item
-                        label="Select Role"
-                        value=""
-                        enabled={false}
-                      />
-                      <Picker.Item label="Parent" value="parent" />
-                      <Picker.Item label="Supervisor" value="supervisor" />
-                      <Picker.Item label="Admin" value="admin" />
-                    </Picker>
-                  )}
-                />
-              )}
-
-              {/* Display error message if role is not selected */}
+              <Controller
+                control={control}
+                name="role"
+                render={({ field }) => (
+                  <DropDownPicker
+                    open={open}
+                    value={field.value || ""}
+                    items={items}
+                    setOpen={setOpen}
+                    setValue={(val) => field.onChange(val)}
+                    setItems={setItems}
+                    placeholder="Select Role"
+                    onChangeValue={(val) => {
+                      field.onChange(val); // อัปเดตค่าไปที่ react-hook-form
+                      setValue(
+                        "role",
+                        (val as "parent" | "supervisor" | "admin") ?? "parent"
+                      ); // บังคับให้ react-hook-form รับค่า
+                      // console.log("Selected Role:", val); // Debugging
+                    }}
+                    containerStyle={{ height: 50, marginBottom: 10 }}
+                    style={{
+                      borderColor: "black",
+                      borderWidth: 1,
+                      borderRadius: 12,
+                    }}
+                    dropDownContainerStyle={{
+                      borderColor: "black",
+                      zIndex: 1000,
+                    }}
+                  />
+                )}
+              />
               {errors.role && (
                 <Text style={styles.errorText}>{errors.role.message}</Text>
               )}
@@ -356,9 +350,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     minHeight: 850,
   },
-  // scrollview: {
-  //   flexGrow: 1,
-  // },
+
   container: {
     width: "80%",
     padding: 20,
@@ -404,11 +396,11 @@ const styles = StyleSheet.create({
     // backgroundColor: "white", // Light background
     backgroundColor: "black", // Dark background
   },
-  picker: {
-    color: "black", // Set text color to black
-    fontSize: 16,
-    borderWidth: 1,
-  },
+  // picker: {
+  //   color: "black", // Set text color to black
+  //   fontSize: 16,
+  //   borderWidth: 1,
+  // },
   pickerButton: {
     borderWidth: 1,
     borderRadius: 12,
