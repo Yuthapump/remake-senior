@@ -12,9 +12,19 @@ import { usePushNotifications } from "../../app/usePushNotifications"; // hook �
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 
+interface Notification {
+  notification_id: number;
+  // user_id: number;
+  message: string;
+  supervisor_id?: number;
+  child_id?: number;
+  status?: "unread" | "read";
+  created_at?: string; // อนุญาตให้เป็น optional ถ้า API ไม่ส่งมา
+}
+
 export const Notificate: FC = () => {
   const { notification } = usePushNotifications(); // รับการแจ้งเตือนจาก push notification
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   // ดึงข้อมูลการแจ้งเตือนจาก API
   useFocusEffect(
@@ -53,17 +63,22 @@ export const Notificate: FC = () => {
       fetchNotifications();
 
       if (notification) {
-        const newNotification = {
-          name: "User", // ปรับให้แสดงชื่อผู้ส่งจริง
-          date: new Date().toLocaleDateString(),
-          message: notification.request.content.body,
+        const newNotification: Notification = {
+          notification_id:
+            notification.request.content.data?.notification_id ?? Date.now(),
+          // user_id: notification.data.user_id ?? 0, // ถ้ามี
+          message: notification.request.content.body ?? "",
+          supervisor_id: undefined, // ถ้าไม่มีค่าให้เป็น undefined
+          child_id: undefined,
+          status: "unread",
+          created_at: new Date().toISOString(), // ใช้ค่า timestamp ปัจจุบัน
         };
 
         setNotifications((prevNotifications) => {
           const updatedNotifications = [newNotification, ...prevNotifications];
 
-          if (updatedNotifications.length > 10) {
-            updatedNotifications.pop(); // เก็บแค่ 10 รายการล่าสุด
+          if (updatedNotifications.length > 20) {
+            updatedNotifications.pop(); // จำกัดรายการล่าสุด
           }
 
           return updatedNotifications;
@@ -103,18 +118,23 @@ export const Notificate: FC = () => {
   };
 
   // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-  return (
-    <ImageBackground
-      source={require("../../assets/background/bg1.png")}
-      style={styles.background}
-    >
-      <View style={styles.container}>
-        <Text style={styles.header}>การแจ้งเตือน</Text>
-
+  // render Teamplate Notificate
+  const renderNotificate = () => {
+    return (
+      <ScrollView style={styles.ScrollView}>
         {notifications.map((notif, index) => (
           <View key={index} style={styles.notificationBox}>
-            <Text style={styles.date}>{notif.created_at}</Text>
+            <Text style={styles.date}>
+              {notif.created_at
+                ? new Intl.DateTimeFormat("th-TH", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }).format(new Date(notif.created_at))
+                : "ไม่ทราบวันที่"}
+            </Text>
             <View style={styles.notificationTopBox}>
               <View style={styles.iconContainer}>
                 <Image
@@ -131,9 +151,16 @@ export const Notificate: FC = () => {
             <View style={styles.resultButtonCantainer}>
               <Pressable
                 style={styles.yesButton}
-                onPress={() =>
-                  handleApprove(notif.child_id, notif.supervisor_id)
-                }
+                onPress={() => {
+                  if (
+                    notif.child_id !== undefined &&
+                    notif.supervisor_id !== undefined
+                  ) {
+                    handleApprove(notif.child_id, notif.supervisor_id);
+                  } else {
+                    console.error("child_id or supervisor_id is missing");
+                  }
+                }}
               >
                 <Text>ยินยอม</Text>
               </Pressable>
@@ -143,7 +170,19 @@ export const Notificate: FC = () => {
             </View>
           </View>
         ))}
-      </View>
+      </ScrollView>
+    );
+  };
+
+  // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+  return (
+    <ImageBackground
+      source={require("../../assets/background/bg1.png")}
+      style={styles.background}
+    >
+      <Text style={styles.header}>การแจ้งเตือน</Text>
+      <View style={styles.container}>{renderNotificate()}</View>
     </ImageBackground>
   );
 };
@@ -152,18 +191,22 @@ const styles = StyleSheet.create({
   background: {
     flex: 1,
     resizeMode: "cover",
+    // justifyContent: "center",
+    alignItems: "center",
   },
   ScrollView: {
     width: "100%",
     marginBottom: "25%",
-    borderWidth: 2,
     borderRadius: 30,
+    borderWidth: 2,
   },
   container: {
     flex: 1,
+    width: "100%",
     padding: 10,
-    paddingTop: "15%",
+    // paddingTop: "15%",
     alignItems: "center",
+    // borderWidth: 2,
   },
   notificationTopBox: {
     flexDirection: "row",
@@ -224,8 +267,8 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: "#333333",
     fontWeight: "bold",
-    marginTop: 5,
-    marginBottom: 20,
+    marginTop: "16%",
+    // marginBottom: 20,
   },
 
   resultButtonCantainer: {

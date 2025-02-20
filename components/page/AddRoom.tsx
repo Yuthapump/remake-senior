@@ -14,6 +14,7 @@ import {
   ImageBackground,
   Keyboard,
   Modal,
+  FlatList,
 } from "react-native";
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,8 +30,18 @@ import { LinearGradient } from "expo-linear-gradient";
 // Form validation schema
 const AddRoomSchema = z.object({
   rooms_name: z.string().min(5, "กรุณาระบุชื่อห้องเรียน").max(150),
+  // colors: z.string(),
 });
-
+// กำหนดสีให้เลือก 7 สี
+const colors = [
+  "#FF5733",
+  "#33FF57",
+  "#3357FF",
+  "#F1C40F",
+  "#8E44AD",
+  "#1ABC9C",
+  "#E74C3C",
+];
 // Type Definitions
 type AddRoomModel = z.infer<typeof AddRoomSchema>;
 
@@ -47,7 +58,8 @@ export const AddRoom: FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
 
   const [roomsPic, setroomsPic] = useState<string | null>(null);
-
+  const [selectedColor, setSelectedColor] = useState(colors[0]);
+  const [isColorModalVisible, setIsColorModalVisible] = useState(false);
   // ฟังก์ชันขออนุญาต
   const requestPermission = async () => {
     try {
@@ -104,7 +116,8 @@ export const AddRoom: FC = () => {
   const onSubmit: SubmitHandler<AddRoomModel> = async (formData) => {
     const supervisor_id = await AsyncStorage.getItem("userId");
     const token = await AsyncStorage.getItem("userToken");
-    // console.log("Form data:", formData);
+    console.log("Form data:", formData);
+    console.log("colors",selectedColor);
     // console.log("UserId: ", supervisor_id);
     //console.log("childPic data:", childPic);
 
@@ -117,7 +130,9 @@ export const AddRoom: FC = () => {
       if (supervisor_id) {
         data.append("supervisor_id", supervisor_id);
       }
-
+      if (selectedColor) {
+        data.append("colors", selectedColor);
+      }
       // ตรวจสอบว่ามีรูปภาพหรือไม่
       if (roomsPic) {
         try {
@@ -143,7 +158,7 @@ export const AddRoom: FC = () => {
 
       // ส่งคำขอไปยัง API
       const resp = await fetch(
-        "https://senior-test-deploy-production-1362.up.railway.app/api/rooms/addRoom",
+        "https://senior-test-deploy-production-1362.up.railway.app/api/rooms/add-room",
         {
           method: "POST",
           body: data,
@@ -247,7 +262,41 @@ export const AddRoom: FC = () => {
                 </>
               )}
             />
+            <Pressable
+              style={[styles.colorBox, { backgroundColor: selectedColor }]}
+              onPress={() => setIsColorModalVisible(true)}
+            >
+              <Text style={styles.colorText}>เลือกสีห้อง</Text>
+            </Pressable>
           </View>
+
+          <Modal
+            visible={isColorModalVisible}
+            transparent={true}
+            animationType="fade"
+          >
+            <View style={styles.modalContainer}>
+              <FlatList
+                data={colors}
+                numColumns={3}
+                renderItem={({ item }) => (
+                  <Pressable
+                    style={[
+                      styles.colorOption,
+                      { backgroundColor: item },
+                      selectedColor === item && styles.selectedColor, // เพิ่มเงื่อนไขเลือกสี
+                    ]}
+                    onPress={() => {
+                      setSelectedColor(item);
+                      setIsColorModalVisible(false);
+                      console.log("Selected color", selectedColor);
+                    }}
+                  />
+                )}
+                keyExtractor={(item) => item}
+              />
+            </View>
+          </Modal>
         </View>
         {/* Bottom Section */}
         <View style={styles.buttonContainer}>
@@ -257,13 +306,16 @@ export const AddRoom: FC = () => {
               style={styles.Icon}
             />
           </Pressable>
-          <Pressable
+          <TouchableOpacity
             //onPress={whenGotoAssessment}
-            onPress={handleSubmit(onSubmit)}
+            onPress={() => {console.log("selected color",selectedColor);
+              handleSubmit(onSubmit)(); 
+              
+            }}
             style={styles.submitButton}
           >
             <Text style={styles.buttonText}>บันทึก</Text>
-          </Pressable>
+          </TouchableOpacity>
         </View>
       </ImageBackground>
       {/* </ScrollView> */}
@@ -277,7 +329,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     justifyContent: "center",
-    padding: 10,
+    paddingBottom: "70%",
 
     //borderWidth:2,
   },
@@ -291,17 +343,13 @@ const styles = StyleSheet.create({
     minHeight: 750,
   },
   Inputcontainer: {
+    flexDirection: "row",
     width: "90%",
     height: "61%",
     justifyContent: "center",
     alignItems: "center",
     padding: 10,
     top: 0,
-    // shadowColor: "#000",
-    // shadowOffset: { width: 0, height: 4 },
-    // shadowOpacity: 0.3,
-    // shadowRadius: 3,
-    // elevation: 6,
     borderWidth: 2,
     marginTop: 60, // Add marginTop to prevent overlapping
   },
@@ -324,7 +372,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     paddingLeft: 20,
     backgroundColor: "#FFFFFF",
-    marginBottom: "100%",
+    marginBottom: 20,
   },
   inputText: {
     left: 0,
@@ -421,5 +469,38 @@ const styles = StyleSheet.create({
     textAlign: "left",
     left: 8,
     marginBottom: 2,
+  },
+  colorBox: {
+    borderColor: "#D9D9D9",
+    borderWidth: 2,
+    borderRadius: 25,
+    paddingLeft: 20,
+    height: 50,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  colorText: {
+    color: "#FFF",
+  },
+  colorOption: {
+    width: 60, // ปรับขนาดวงกลม
+    height: 60,
+    margin: 10,
+    borderRadius: 30, // ทำให้เป็นวงกลม
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  
+  selectedColor: {
+    borderWidth: 4, // ทำกรอบสีให้ชัดเจน
+    borderColor: "#FFF", // สีกรอบ (สามารถเปลี่ยนได้)
+  },
+  modalContainer: {
+    flex: 1,
+    height: "100%",
+    paddingTop: "70%",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.7)",
   },
 });

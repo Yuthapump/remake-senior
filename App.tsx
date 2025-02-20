@@ -28,6 +28,8 @@ import { Training } from "./components/assessment/Training";
 import { UpdateProfile } from "./components/page/UpdateProfile";
 import { AddRoom } from "./components/page/AddRoom";
 import { AddchildSP } from "./components/page/AddchildSP";
+import { ChooseRoom } from "./components/page/ChooseRoom";
+import { ChooseChildSP } from "./components/page/ChooseChildSP";
 
 import { HospitalDetailScreen } from "./components/HospitalDetailScreen";
 
@@ -55,6 +57,7 @@ export default function App() {
       <NavigationContainer linking={linking}>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <Stack.Screen name="splash" component={SplashScreen} />
+
           <Stack.Screen name="welcome" component={Welcome} />
           <Stack.Screen name="login" component={Login} />
           <Stack.Screen name="reset-password" component={ResetPassword} />
@@ -75,9 +78,12 @@ export default function App() {
           <Stack.Screen name="training" component={Training} />
           <Stack.Screen name="updateprofile" component={UpdateProfile} />
 
-          <Stack.Screen name="adminHome" component={HomeAD} />
           <Stack.Screen name="addroom" component={AddRoom} />
           <Stack.Screen name="addchildSP" component={AddchildSP} />
+          <Stack.Screen name="chooseroom" component={ChooseRoom} />
+          <Stack.Screen name="choosechildsps" component={ChooseChildSP} />
+
+          <Stack.Screen name="adminHome" component={HomeAD} />
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>

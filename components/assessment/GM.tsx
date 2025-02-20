@@ -505,6 +505,7 @@ const styles = StyleSheet.create({
   profileCardBoy: {
     flexDirection: "row",
     width: 350,
+
     alignItems: "center",
     backgroundColor: "#c5e5fc",
     padding: 10,

@@ -364,7 +364,7 @@ export const AddChild: FC = () => {
                 </Text>
               </TouchableOpacity>
 
-              {showDatePicker && (
+              {Platform.OS === "ios" && showDatePicker && (
                 <Modal
                   transparent={true}
                   animationType="slide"
@@ -376,29 +376,28 @@ export const AddChild: FC = () => {
                         value={date}
                         mode="date"
                         display="spinner"
-                        onChange={(event, selectedDate) => {
-                          if (selectedDate) {
-                            setDate(selectedDate);
+                        onChange={(event, newDate) => {
+                          if (newDate) {
+                            setDate(newDate);
+                            handleConfirm(newDate);
                           }
                         }}
-                        textColor="black" // Text color inside the date picker
-                        themeVariant="light" // Theme variant (light or dark)
+                        textColor="black"
+                        themeVariant="light"
                         locale="th"
                       />
                       <View style={styles.buttonsContainer}>
-                        {/* Cancel Button */}
                         <TouchableOpacity
                           style={styles.cancelButton}
-                          onPress={() => setShowDatePicker(false)} // Close the date picker
+                          onPress={() => setShowDatePicker(false)}
                         >
                           <Text style={styles.buttonText}>ยกเลิก</Text>
                         </TouchableOpacity>
-                        {/* Confirm Button */}
                         <TouchableOpacity
                           style={styles.confirmButton}
                           onPress={() => {
-                            handleConfirm(date); // Process the selected date
-                            setShowDatePicker(false); // Close the date picker
+                            handleConfirm(date);
+                            setShowDatePicker(false);
                           }}
                         >
                           <Text style={styles.buttonText}>ยืนยัน</Text>
@@ -407,6 +406,20 @@ export const AddChild: FC = () => {
                     </View>
                   </View>
                 </Modal>
+              )}
+
+              {Platform.OS === "android" && showDatePicker && (
+                <DateTimePicker
+                  value={date}
+                  mode="date"
+                  display="calendar" // ใช้ calendar ใน Android แทน spinner
+                  onChange={(event, newDate) => {
+                    setShowDatePicker(false);
+                    if (newDate) {
+                      handleConfirm(newDate);
+                    }
+                  }}
+                />
               )}
 
               {errors.birthday && (
