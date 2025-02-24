@@ -7,6 +7,7 @@ import {
   Image,
   Pressable,
   ImageBackground,
+  ScrollView,
 } from "react-native";
 import {
   useNavigation,
@@ -19,6 +20,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { Child } from "../page/HomePR";
 import { LoadingScreenAdvice, LoadingScreenSearchfile } from "../LoadingScreen";
+import { LinearGradient } from "expo-linear-gradient";
 
 type GMRouteProp = RouteProp<{ assessment: { child: Child } }, "assessment">;
 
@@ -149,12 +151,18 @@ export const GM: FC = () => {
 
   const calculateAgeRange = (minMonths: number, maxMonths: number): string => {
     const formatAge = (months: number) => {
+      if (isNaN(months)) return ""; // ถ้า NaN ให้คืนค่าเป็น string ว่าง
       const years = Math.floor(months / 12);
       const remainingMonths = months % 12;
       return `${years} ปี ${remainingMonths} เดือน`;
     };
 
-    return `${formatAge(minMonths)} - ${formatAge(maxMonths)}`;
+    const minAge = formatAge(minMonths);
+    const maxAge = formatAge(maxMonths);
+
+    // ถ้ามีค่าทั้งสอง ให้เชื่อมด้วย " - " แต่ถ้ามีค่าเดียวให้แสดงเฉพาะค่านั้น
+    if (minAge && maxAge) return `${minAge} - ${maxAge}`;
+    return minAge || maxAge || "ข้อมูลไม่สมบูรณ์";
   };
 
   // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -204,6 +212,7 @@ export const GM: FC = () => {
               assessmentDetails.assessment_device_image ?? ""
             )}
             style={styles.deviceIcon}
+            resizeMode="contain"
           />
         )}
         {assessmentDetails.assessment_device_detail !== "none" && (
@@ -217,17 +226,50 @@ export const GM: FC = () => {
 
   // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   // imageMap
-
   interface ImageMap {
     [key: string]: any;
   }
 
   const imageMap: ImageMap = {
-    "GM/gm-1": require("../../assets/assessment/GM/gm-3.png"),
-    "GM/gm-dv-1": require("../../assets/assessment/GM/devices/gm-dv-1.png"),
+    "GM1.jpg": require("../../assets/assessment/GM/GM1.jpg"),
+    "GM2.jpg": require("../../assets/assessment/GM/GM2.jpg"),
+    "GM3.jpg": require("../../assets/assessment/GM/GM3.jpg"),
+    "GM4.jpeg": require("../../assets/assessment/GM/GM4.jpeg"),
+    "GM5.jpg": require("../../assets/assessment/GM/GM5.jpg"),
+    "GM6.jpg": require("../../assets/assessment/GM/GM6.jpg"),
+    "GM7.jpg": require("../../assets/assessment/GM/GM7.jpg"),
+    "GM8.jpg": require("../../assets/assessment/GM/GM8.jpg"),
+    "GM9.jpg": require("../../assets/assessment/GM/GM9.jpg"),
+    "GM10.jpg": require("../../assets/assessment/GM/GM10.jpg"),
+    "GM11.jpg": require("../../assets/assessment/GM/GM11.jpg"),
+    "GM12.jpg": require("../../assets/assessment/GM/GM12.jpg"),
+    "GM13.jpg": require("../../assets/assessment/GM/GM13.jpg"),
+    "GM14.jpg": require("../../assets/assessment/GM/GM14.jpg"),
+    "GM15.jpg": require("../../assets/assessment/GM/GM15.jpg"),
+    "GM16.jpg": require("../../assets/assessment/GM/GM16.jpg"),
+    "GM17.jpg": require("../../assets/assessment/GM/GM17.jpg"),
+    "GM18.jpg": require("../../assets/assessment/GM/GM18.jpg"),
+    "GM19.jpg": require("../../assets/assessment/GM/GM19.jpg"),
+    "GM20.jpg": require("../../assets/assessment/GM/GM20.jpg"),
+    "GM21.jpg": require("../../assets/assessment/GM/GM21.jpg"),
+    "GM22.jpg": require("../../assets/assessment/GM/GM22.jpg"),
+    "GM23.jpg": require("../../assets/assessment/GM/GM23.jpg"),
+    "GM24.jpg": require("../../assets/assessment/GM/GM24.jpg"),
+    "GM25.jpg": require("../../assets/assessment/GM/GM25.jpg"),
+    "GM26.jpg": require("../../assets/assessment/GM/GM26.jpg"),
+    "GM27.jpg": require("../../assets/assessment/GM/GM27.jpg"),
+    "GM28.jpg": require("../../assets/assessment/GM/GM28.jpg"),
+    "maracus.png": require("../../assets/assessment/Device/maracus.png"),
+    "setA.png": require("../../assets/assessment/Device/setA.png"),
+    "rope.png": require("../../assets/assessment/Device/rope.png"),
+    "ball.png": require("../../assets/assessment/Device/ball.png"),
+    "ropeonbox.png": require("../../assets/assessment/Device/ropeonbox.png"),
+    "setJ.png": require("../../assets/assessment/Device/setJ.png"),
+
+    /*  "GM/gm-dv-1": require("../../assets/assessment/GM/devices/gm-dv-1.png"),
     "GM/gm-2": require("../../assets/assessment/GM/gm-4.png"),
     "GM/gm-dv-2": require("../../assets/assessment/GM/devices/gm-dv-2.png"),
-    "GM/gm-tr-2": require("../../assets/assessment/GM/trainings/gm-tr-2.png"),
+    "GM/gm-tr-2": require("../../assets/assessment/GM/trainings/gm-tr-2.png"), */
   };
 
   const getImageSource = (imagePath: string): any => {
@@ -294,8 +336,15 @@ export const GM: FC = () => {
     >
       {/* Top Section */}
       <View style={styles.topSection}>
-        <View
+        <LinearGradient
           key={child.child_id}
+          colors={
+            child.gender === "male"
+              ? ["#fff", "#E7F6FF", "#D6ECFD"] // ไล่สีฟ้าสำหรับเด็กผู้ชาย
+              : ["#fff", "#FFDEE4", "#FFBED6"] // ไล่สีชมพูสำหรับเด็กผู้หญิง
+          }
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
           style={
             child.gender === "male"
               ? styles.profileCardBoy
@@ -311,110 +360,113 @@ export const GM: FC = () => {
               <Text style={styles.profileAge}>{child.age}</Text>
             </View>
           </View>
-        </View>
+        </LinearGradient>
       </View>
 
       {/* Mid Section */}
-
       <View style={styles.midSection}>
-        {loading ? (
-          <LoadingScreenSearchfile />
-        ) : error ? (
-          <Text style={styles.errorText}>{error}</Text>
-        ) : (
-          <>
-            {/* assessment header */}
-            <View style={styles.headerTextContainer}>
-              <Text style={styles.headerText}>Gross Motor (GM)</Text>
-              <Text style={styles.headerAgeContainer}>
-                อายุพัฒนาการ:{" "}
-                {assessmentDetails?.age_range
-                  ? calculateAgeRange(
-                      ...(assessmentDetails.age_range
-                        .split("-")
-                        .map(Number) as [number, number])
-                    )
-                  : "ข้อมูลไม่สมบูรณ์"}
-              </Text>
-            </View>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={styles.containerSection}>
+            {loading ? (
+              <LoadingScreenSearchfile />
+            ) : error ? (
+              <Text style={styles.errorText}>{error}</Text>
+            ) : (
+              <>
+                {/* assessment header */}
+                <View style={styles.headerTextContainer}>
+                  <Text style={styles.headerText}>Gross Motor (GM)</Text>
+                  <Text style={styles.headerAgeContainer}>
+                    อายุพัฒนาการ:{" "}
+                    {assessmentDetails?.age_range
+                      ? calculateAgeRange(
+                          ...(assessmentDetails.age_range
+                            .split("-")
+                            .map(Number) as [number, number])
+                        )
+                      : "ข้อมูลไม่สมบูรณ์"}
+                  </Text>
+                </View>
 
-            {/* assessment rank */}
-            <View style={styles.assessmentTop}>
-              <View style={styles.assessmentNumberContainer}>
-                <Text style={styles.assessmentNumber}>
-                  {assessmentDetails?.assessment_details_id}
-                </Text>
-              </View>
-              <Text style={styles.assessmentTitle}>
-                {assessmentDetails?.assessment_name ?? "ไม่มีข้อมูล"}
-              </Text>
-            </View>
+                {/* assessment rank */}
+                <View style={styles.assessmentTop}>
+                  <View style={styles.assessmentNumberContainer}>
+                    <Text style={styles.assessmentNumber}>
+                      {assessmentDetails?.assessment_details_id}
+                    </Text>
+                  </View>
+                  <Text style={styles.assessmentTitle}>
+                    {assessmentDetails?.assessment_name ?? "ไม่มีข้อมูล"}
+                  </Text>
+                </View>
 
-            {assessmentDetails?.assessment_image && (
-              <Image
-                source={getImageSource(assessmentDetails.assessment_image)}
-                style={styles.assessmentLogo}
-              />
+                {assessmentDetails?.assessment_image && (
+                  <Image
+                    source={getImageSource(assessmentDetails.assessment_image)}
+                    style={styles.assessmentLogo}
+                  />
+                )}
+
+                {/* assessment device */}
+                {assessmentDetails &&
+                  (assessmentDetails.assessment_device_name !== "none" ||
+                    assessmentDetails.assessment_device_image !== "none" ||
+                    assessmentDetails.assessment_device_detail !== "none") &&
+                  renderAssessmentDevice()}
+
+                {/* assessment how to */}
+                <View style={styles.assessmentHowto}>
+                  <Text style={styles.headerHowto}>วิธีการประเมิน</Text>
+                  <Text style={styles.howtoText}>
+                    {assessmentDetails?.assessment_method ?? "ไม่มีข้อมูล"}
+                  </Text>
+                </View>
+              </>
             )}
+          </View>
 
-            {/* assessment device */}
-            {assessmentDetails &&
-              (assessmentDetails.assessment_device_name !== "none" ||
-                assessmentDetails.assessment_device_image !== "none" ||
-                assessmentDetails.assessment_device_detail !== "none") &&
-              renderAssessmentDevice()}
-
-            {/* assessment how to */}
-            <View style={styles.assessmentHowto}>
-              <Text style={styles.headerHowto}>วิธีการประเมิน</Text>
-              <Text style={styles.howtoText}>
-                {assessmentDetails?.assessment_method ?? "ไม่มีข้อมูล"}
-              </Text>
+          {/* assessment result */}
+          <View style={styles.assessmentResult}>
+            <View style={styles.headerResultContainer}>
+              <Text style={styles.headerResult}>ผลการประเมิน</Text>
             </View>
-          </>
-        )}
-      </View>
+            <Text style={styles.resultText}>
+              {assessmentDetails?.assessment_succession ?? "ไม่มีข้อมูล"}
+            </Text>
 
-      {/* assessment result */}
-      <View style={styles.assessmentResult}>
-        <View style={styles.headerResultContainer}>
-          <Text style={styles.headerResult}>ผลการประเมิน</Text>
-        </View>
-        <Text style={styles.resultText}>
-          {assessmentDetails?.assessment_succession ?? "ไม่มีข้อมูล"}
-        </Text>
-
-        <View style={styles.resultButtonCantainer}>
-          <Pressable
-            style={styles.yesButton}
-            onPress={() => {
-              if (assessmentInsert) {
-                console.log(
-                  "Calling fetchNextAssessment with assessmentInsert_id:",
-                  assessmentInsert.assessment_id
-                );
-                fetchNextAssessment(
-                  child.child_id,
-                  "GM",
-                  assessmentInsert.assessment_id,
-                  userId?.user_id ?? 0
-                );
-              } else {
-                console.log("assessmentInsert is null or undefined");
-              }
-            }}
-          >
-            <Text>ได้</Text>
-          </Pressable>
-          <Pressable
-            style={styles.noButton}
-            onPress={() =>
-              assessmentDetails && whenGotoTraining(assessmentDetails)
-            }
-          >
-            <Text>ไม่ได้</Text>
-          </Pressable>
-        </View>
+            <View style={styles.resultButtonCantainer}>
+              <Pressable
+                style={styles.yesButton}
+                onPress={() => {
+                  if (assessmentInsert) {
+                    console.log(
+                      "Calling fetchNextAssessment with assessmentInsert_id:",
+                      assessmentInsert.assessment_id
+                    );
+                    fetchNextAssessment(
+                      child.child_id,
+                      "GM",
+                      assessmentInsert.assessment_id,
+                      userId?.user_id ?? 0
+                    );
+                  } else {
+                    console.log("assessmentInsert is null or undefined");
+                  }
+                }}
+              >
+                <Text>ได้</Text>
+              </Pressable>
+              <Pressable
+                style={styles.noButton}
+                onPress={() =>
+                  assessmentDetails && whenGotoTraining(assessmentDetails)
+                }
+              >
+                <Text>ไม่ได้</Text>
+              </Pressable>
+            </View>
+          </View>
+        </ScrollView>
       </View>
 
       {/* Bottom Section */}
@@ -444,8 +496,8 @@ const styles = StyleSheet.create({
     //justifyContent: "center",
     alignItems: "center",
   },
-  secion: {
-    position: "absolute",
+  ScrollView: {
+    // borderWidth: 2,
   },
 
   topSection: {
@@ -456,23 +508,32 @@ const styles = StyleSheet.create({
     paddingTop: 55,
   },
   midSection: {
+    width: "85%",
+    height: "72%",
+    marginBottom: 15,
+    flexDirection: "row",
+    justifyContent: "center",
+    // borderWidth: 2,
+  },
+  containerSection: {
     // flex: 1,
-    width: 350,
+    width: "100%",
     height: "auto",
     minHeight: 300,
-    marginTop: 0,
+    //maxHeight:485,
+    marginTop: 5,
     paddingBottom: 5,
-    borderRadius: 30,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 6,
+    borderRadius: 20,
+    shadowColor: "#c5c5c5",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 5,
     backgroundColor: "#fff",
     // justifyContent: "center",
     alignItems: "center",
     overflow: "hidden", // Add this line to prevent overflow
-    // borderWidth: 2,
+    //borderWidth: 2,
   },
   bottomSection: {
     flexDirection: "row",
@@ -490,31 +551,30 @@ const styles = StyleSheet.create({
 
   profileCardGirl: {
     flexDirection: "row",
-    width: 350,
     height: "auto",
     alignItems: "center",
     backgroundColor: "#ffd7e5",
     padding: 10,
-    borderRadius: 30,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 6,
+    borderRadius: 20,
+    width: "85%",
+    shadowColor: "#b5b5b5",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 5,
   },
   profileCardBoy: {
     flexDirection: "row",
-    width: 350,
-
     alignItems: "center",
     backgroundColor: "#c5e5fc",
     padding: 10,
-    borderRadius: 30,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 6,
+    borderRadius: 20,
+    width: "85%",
+    shadowColor: "#b5b5b5",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 5,
   },
   profileIcon: {
     width: 70,
@@ -610,7 +670,7 @@ const styles = StyleSheet.create({
   headerTextContainer: {
     width: "100%",
     height: 70,
-    borderRadius: 30,
+    borderRadius: 0,
     backgroundColor: "#5F5F5F",
     alignItems: "center", // แกน x
     // justifyContent: "center", // แกน y
@@ -652,7 +712,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#8DD9BD",
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 25,
+    borderTopRightRadius: 0,
+    borderTopLeftRadius: 30,
+    borderBottomRightRadius: 0,
+    borderBottomLeftRadius: 30,
     width: 60,
     height: "100%",
   },
@@ -664,17 +727,20 @@ const styles = StyleSheet.create({
   assessmentTitleContainer: {
     flexDirection: "row",
     width: "70%",
+    height: "auto",
     alignItems: "center",
   },
   assessmentTitle: {
     fontSize: 14,
     fontWeight: "bold",
+    width: 220,
+    height: "auto",
     marginTop: 5,
     marginBottom: 5,
-    marginLeft: 10,
-    marginRight: 60,
+    marginLeft: "auto",
+    marginRight: "auto",
     textAlign: "center",
-    // borderWidth: 2,
+    //borderWidth: 2,
   },
 
   // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -683,7 +749,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     resizeMode: "cover",
-    // borderWidth: 1,
+    borderRadius: 15,
   },
 
   // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -742,20 +808,23 @@ const styles = StyleSheet.create({
   headerResultContainer: {
     width: "100%",
     height: 40,
-    borderRadius: 30,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 0,
+    borderBottomLeftRadius: 0,
     backgroundColor: "#5F5F5F",
     justifyContent: "center",
   },
   assessmentResult: {
-    width: "90%",
+    width: "100%",
     marginVertical: 10,
-    borderRadius: 30,
-    backgroundColor: "#EEEEEE",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 6,
+    borderRadius: 20,
+    backgroundColor: "#fff",
+    shadowColor: "#c5c5c5",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 5,
     alignItems: "center",
   },
   headerResult: {
@@ -780,14 +849,14 @@ const styles = StyleSheet.create({
     //borderWidth: 2,
   },
   yesButton: {
-    backgroundColor: "#DAF0C8",
+    backgroundColor: "#9de3c9",
     padding: 10,
     borderRadius: 30,
     width: "45%",
     alignItems: "center",
   },
   noButton: {
-    backgroundColor: "#FFC1C1",
+    backgroundColor: "#FF9E9E",
     padding: 10,
     borderRadius: 30,
     width: "45%",

@@ -149,28 +149,39 @@ export const Advice: FC = () => {
                 : undefined
             }
           >
-            {hospitals.length > 0
-              ? hospitals
-                  .map((hospital) => {
-                    if (!hospital.latitude || !hospital.longitude) {
-                      console.warn("Invalid hospital coordinates:", hospital);
-                      return null;
-                    }
+            {/* === Marker ของผู้ใช้ === */}
+            {location && (
+              <Marker
+                coordinate={{
+                  latitude: location.latitude,
+                  longitude: location.longitude,
+                }}
+                title="ตำแหน่งของคุณ"
+                pinColor="blue" // ให้เป็นสีฟ้าเพื่อแยกจากโรงพยาบาล
+              />
+            )}
 
-                    return (
-                      <Marker
-                        key={hospital.id}
-                        coordinate={{
-                          latitude: hospital.latitude,
-                          longitude: hospital.longitude,
-                        }}
-                        title={hospital.name}
-                        description={hospital.address}
-                      />
-                    );
-                  })
-                  .filter((marker) => marker !== null)
-              : []}
+            {/* === Marker ของโรงพยาบาล === */}
+            {hospitals.length > 0 &&
+              hospitals
+                .map((hospital) => {
+                  if (!hospital.latitude || !hospital.longitude) {
+                    console.warn("Invalid hospital coordinates:", hospital);
+                    return null;
+                  }
+                  return (
+                    <Marker
+                      key={hospital.id}
+                      coordinate={{
+                        latitude: hospital.latitude,
+                        longitude: hospital.longitude,
+                      }}
+                      title={hospital.name}
+                      description={hospital.address}
+                    />
+                  );
+                })
+                .filter((marker) => marker !== null)}
           </MapView>
         ) : (
           <Text>กำลังโหลดแผนที่...</Text>

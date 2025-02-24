@@ -190,12 +190,12 @@ export const Training: FC = () => {
   }
 
   const imageMap: ImageMap = {
-    "GM/gm-1": require("../../assets/assessment/GM/gm-3.png"),
+    /* "GM/gm-1": require("../../assets/assessment/GM/gm-3.png"),
     "GM/gm-dv-1": require("../../assets/assessment/GM/devices/gm-dv-1.png"),
     "GM/gm-tr-1": require("../../assets/assessment/GM/trainings/gm-tr-2.png"),
     "GM/gm-2": require("../../assets/assessment/GM/gm-4.png"),
     "GM/gm-dv-2": require("../../assets/assessment/GM/devices/gm-dv-2.png"),
-    "GM/gm-tr-2": require("../../assets/assessment/GM/trainings/gm-tr-2.png"),
+    "GM/gm-tr-2": require("../../assets/assessment/GM/trainings/gm-tr-2.png"), */
   };
 
   const getImageSource = (imagePath: string): any => {

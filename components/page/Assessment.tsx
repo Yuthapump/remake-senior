@@ -15,7 +15,7 @@ import {
   useRoute,
 } from "@react-navigation/native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-
+import { LinearGradient } from "expo-linear-gradient";
 import { Child } from "./HomePR";
 
 type AssessmentRouteProp = RouteProp<
@@ -65,14 +65,17 @@ export const Assessment: FC = () => {
     >
       {/* Top Section */}
       <View style={styles.topSection}>
-        <View
-          key={child.child_id}
-          style={
-            child.gender === "male"
-              ? styles.profileCardBoy
-              : styles.profileCardGirl
-          }
-        >
+        <LinearGradient
+                            key={child.child_id}
+                            colors={
+                              child.gender === "male"
+                                ? ["#fff", "#E7F6FF","#D6ECFD"]  // ไล่สีฟ้าสำหรับเด็กผู้ชาย
+                                :["#fff", "#FFDEE4","#FFBED6"]  // ไล่สีชมพูสำหรับเด็กผู้หญิง
+                            }
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                            style={child.gender === "male" ? styles.profileCardBoy : styles.profileCardGirl}
+                          >
           <Image source={{ uri: child.childPic }} style={styles.profileIcon} />
           <View style={styles.profileInfo}>
             <View style={styles.detailsName}>
@@ -93,7 +96,7 @@ export const Assessment: FC = () => {
               <Text style={styles.detailsText}>ดูรายละเอียด</Text>
             </Pressable>
           </View>
-        </View>
+        </LinearGradient>
       </View>
 
       {/* Mid Section */}
@@ -171,29 +174,32 @@ const styles = StyleSheet.create({
   topSection: {
     flex: 1,
     width: "100%",
-    paddingBottom: 20,
+    maxHeight:220,
     alignItems: "center",
+    //borderWidth:2,
   },
   midSection: {
     flex: 1,
     width: 350,
-    marginTop: 15,
-    paddingBottom: "80%",
+    maxHeight:530,
+    //marginTop: 10,
+    paddingBottom: "70%",
     paddingVertical: 20,
     borderRadius: 30,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 6,
+    shadowColor: "#b5b5b5",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 5,
     backgroundColor: "#E0F7F3",
     //justifyContent: "center",
     alignItems: "center",
+    //borderWidth:2,
   },
   bottomSection: {
     flexDirection: "row",
     width: "100%",
-    paddingTop: 30,
+    paddingTop: 45,
     paddingBottom: 30,
     justifyContent: "center",
     alignItems: "center",
@@ -206,12 +212,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffd7e5",
     padding: 15,
     borderRadius: 30,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 6,
+    shadowColor: "#b5b5b5",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 5,
     marginTop: 60,
+    //borderWidth:2,
   },
   profileCardBoy: {
     flexDirection: "row",
@@ -220,12 +227,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#c5e5fc",
     padding: 10,
     borderRadius: 30,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 6,
+    shadowColor: "#b5b5b5",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 5,
     marginTop: 70,
+    //borderWidth:2,
   },
   profileIcon: {
     width: 70,
@@ -253,6 +261,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     borderRadius: 25,
     alignItems: "center",
+    shadowColor: "#ff7aaa",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 5,
   },
   detailsButtonBoy: {
     width: "85%",
@@ -263,6 +276,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     borderRadius: 25,
     alignItems: "center",
+    shadowColor: "#76c6ff",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 5,
   },
   detailsName: {
     width: "85%",
@@ -310,6 +328,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 3,
     elevation: 2,
+    
   },
   homeButton: {
     backgroundColor: "#cce9fe",
@@ -332,7 +351,12 @@ const styles = StyleSheet.create({
     width: "90%",
     paddingVertical: 15,
     marginVertical: 6,
-    borderWidth: 1,
+    //borderWidth: 1,
+    shadowColor: "#b5b5b5",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
+    elevation: 5,
     borderRadius: 20,
     backgroundColor: "#fff",
     alignItems: "center",
@@ -350,5 +374,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     bottom: 5,
+    marginTop:10,
+    marginBottom:5,
   },
 });

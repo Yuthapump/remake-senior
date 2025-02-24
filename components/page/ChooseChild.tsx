@@ -23,6 +23,7 @@ import {
   calculateAge,
   AssessmentDetails,
 } from "../../components/page/HomePR";
+import { LinearGradient } from "expo-linear-gradient";
 
 export const ChooseChild: FC = () => {
   const navigation = useNavigation<NavigationProp<any>>();
@@ -156,14 +157,17 @@ export const ChooseChild: FC = () => {
             </View>
           ) : (
             children.map((child) => (
-              <View
+              <LinearGradient
                 key={child.child_id}
-                style={
+                colors={
                   child.gender === "male"
-                    ? styles.profileCardBoy
-                    : styles.profileCardGirl
+                    ?["#fff", "#E7F6FF","#D6ECFD"]  // ไล่สีฟ้าสำหรับเด็กผู้ชาย
+                    :["#fff", "#FFDEE4","#FFBED6"]  // ไล่สีชมพูสำหรับเด็กผู้หญิง
                 }
-              >
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={child.gender === "male" ? styles.profileCardBoy : styles.profileCardGirl}
+                >
                 <Pressable onPress={() => whenGotoAssessment(child)}>
                   <Image
                     source={
@@ -193,7 +197,7 @@ export const ChooseChild: FC = () => {
                     <Text style={styles.detailsText}>ดูรายละเอียด</Text>
                   </Pressable>
                 </View>
-              </View>
+              </LinearGradient>
             ))
           )}
         </ScrollView>
@@ -225,11 +229,12 @@ const styles = StyleSheet.create({
   },
   ScrollView: {
     width: "100%",
-    borderWidth: 2,
+    
     borderRadius: 30,
   },
   midSection: {
     height: "70%",
+    //borderWidth: 2,
   },
   bottomSection: {
     width: "auto",
@@ -248,32 +253,36 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   profileCardGirl: {
+    marginHorizontal:5,
+    marginTop:5,
+    marginBottom:10,
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#ffd7e5",
     padding: 10,
-    borderRadius: 30,
+    borderRadius: 25,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 6,
-    width: 330,
-    marginTop: 15,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.01,
+    shadowRadius: 10,
+    elevation: 5
   },
   profileCardBoy: {
+    marginHorizontal:5,
+    marginTop:5,
+    marginBottom:10,
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#c5e5fc",
     padding: 10,
-    borderRadius: 30,
+    borderRadius: 25,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.01,
+    shadowRadius: 10,
+    elevation: 5,
     width: 330,
-    marginTop: 15,
+    
   },
   profileIcon: {
     width: 60,
@@ -300,7 +309,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 8,
     marginVertical: 2,
-    borderRadius: 5,
+    borderRadius: 9,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -312,7 +321,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 8,
     marginVertical: 2,
-    borderRadius: 5,
+    borderRadius: 9,
     alignItems: "center",
   },
   detailsText: {
@@ -330,6 +339,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     borderRadius: 25,
     alignItems: "center",
+    shadowColor: "#76c6ff",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 5,
   },
   detailsButtonGirl: {
     width: "85%",
@@ -340,6 +354,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     borderRadius: 25,
     alignItems: "center",
+    shadowColor: "#ff7aaa",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 5,
   },
   buttonContainer: {
     flexDirection: "row",

@@ -220,7 +220,7 @@ export const HomePR: FC = () => {
           if (filteredDetails.length === 0) return null;
 
           // Select the correct icon based on the aspect
-          let aspectImage;
+          /*  let aspectImage;
           switch (aspect) {
             case "GM":
               aspectImage = require("../../assets/icons/stateGM.png");
@@ -240,7 +240,7 @@ export const HomePR: FC = () => {
             default:
               aspectImage = require("../../assets/icons/childIcon.png"); // Fallback image
           }
-
+ */
           return (
             <View key={aspect}>
               {/* Render each detail for this aspect */}
@@ -250,7 +250,10 @@ export const HomePR: FC = () => {
                   style={styles.assessmentsState}
                 >
                   {/* Render the icon for the current aspect */}
-                  <Image source={aspectImage} style={styles.stateIcon} />
+                  {/* <Image source={aspectImage} style={styles.stateIcon} /> */}
+                  <View style={styles.aspectName}>
+                    <Text style={styles.textaspectName}>{detail.aspect}</Text>
+                  </View>
                   <View style={styles.stateNumber}>
                     <Text style={styles.textState}>
                       {detail.assessment_details_id}
@@ -297,27 +300,53 @@ export const HomePR: FC = () => {
           <View style={styles.startassessmentsSection}>
             <Pressable onPress={whenGotoChooseChild}>
               <LinearGradient
-                colors={["#FFFFFF", "#E6FFF0", "#DCF5F0"]}
+                colors={["#FFFFFF", "#c7eedb"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1.5 }}
                 style={styles.evaluateButton}
               >
                 <Image
-                  source={require("../../assets/icons/assessment.png")}
+                  source={require("../../assets/icons/self-improvement_1.png")}
                   style={styles.asessmentIcon}
                 />
                 <Text style={styles.evaluateText}>เริ่มการประเมิน</Text>
+              </LinearGradient>
+            </Pressable>
+
+            <Pressable onPress={whenGotoAddChild}>
+              <LinearGradient
+                colors={["#CEC9FF", "#F5E5FF"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 2 }}
+                style={styles.addchildButton}
+              >
+                <Image
+                  source={require("../../assets/icons/addchild.png")}
+                  style={styles.addchildIcon}
+                />
               </LinearGradient>
             </Pressable>
           </View>
 
           {/* Child data Section */}
           <View style={styles.midSection}>
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              // style={styles.ScrollView}
+            >
               {children.length === 0 ? (
                 <View style={styles.howtousesection}></View>
               ) : (
                 children.map((child) => (
-                  <View
+                  <LinearGradient
                     key={child.child_id}
+                    colors={
+                      child.gender === "male"
+                        ? ["#fff", "#E7F6FF", "#D6ECFD"] // ไล่สีฟ้าสำหรับเด็กผู้ชาย
+                        : ["#fff", "#FFDEE4", "#FFBED6"] // ไล่สีชมพูสำหรับเด็กผู้หญิง
+                    }
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
                     style={
                       child.gender === "male"
                         ? styles.profileCardBoy
@@ -363,17 +392,17 @@ export const HomePR: FC = () => {
                         <Text style={styles.detailsText}>ดูรายละเอียด</Text>
                       </Pressable>
                     </View>
-                  </View>
+                  </LinearGradient>
                 ))
               )}
             </ScrollView>
           </View>
-          <Pressable style={styles.addButton} onPress={whenGotoAddChild}>
+          {/* <Pressable style={styles.addButton} onPress={whenGotoAddChild}>
             <Image
               source={require("../../assets/icons/add.png")}
               style={styles.addIcon}
             />
-          </Pressable>
+          </Pressable> */}
         </View>
       </ImageBackground>
     </SafeAreaProvider>
@@ -399,50 +428,58 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderRadius: 30,
   },
-  addButton: {
-    backgroundColor: "#FFF",
-    justifyContent: "center",
+  addchildButton: {
+    marginTop: 15, // เพิ่มระยะห่างจากปุ่ม Start Assessment
+    width: 350,
+    paddingVertical: 7,
+    borderRadius: 50,
     alignItems: "center",
-    padding: 15,
-    borderRadius: 30,
-    width: 60,
-    height: 60,
-    left: "78%",
-    position: "absolute",
-    bottom: 0,
-    marginBottom: 110,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.2,
+    shadowRadius: 15,
+    elevation: 5,
+    //borderWidth:2,
   },
-  addIcon: {
-    width: 45,
-    height: 45,
+  addchildIcon: {
+    width: 20,
+    height: 30,
+    shadowColor: "#CEC9FF",
+    shadowOffset: { width: 5, height: 5 },
+    shadowOpacity: 1,
+    shadowRadius: 15,
+    elevation: 5,
   },
 
   // ---------------------------------------------------------------------------------------------
 
   midSection: {
     width: "90%",
-    height: "70%",
-    marginTop: 15,
+    height: "65.5%",
+    //marginTop: 5,
     marginBottom: 15,
     flexDirection: "row",
-    alignItems: "center",
+    //alignItems: "center",
     justifyContent: "center",
-    // borderWidth: 2,
+    //borderWidth: 2,
   },
   profileCardBoy: {
     flexDirection: "row",
     // alignItems: "center",
-    backgroundColor: "#c5e5fc",
+    //backgroundColor: "#c5e5fc",
     padding: 10,
     borderRadius: 30,
     width: 350,
     height: "auto",
-    marginTop: 15,
+    marginTop: 5,
+    marginBottom: 10,
+    marginLeft: "auto",
+    marginRight: "auto",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.2,
+    shadowRadius: 15,
+    elevation: 5,
   },
   profileCardGirl: {
     flexDirection: "row",
@@ -452,14 +489,25 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     width: 350,
     height: "auto",
-    marginTop: 15,
+    marginTop: 5,
+    marginBottom: 10,
+    marginLeft: "auto",
+    marginRight: "auto",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.2,
+    shadowRadius: 15,
+    elevation: 5,
   },
 
   profileIcon: {
-    width: 61,
-    height: 61,
-    marginTop: 10,
+    width: 64,
+    height: 64,
+    marginTop: 5,
+    // marginVertical:5,
     borderRadius: 50,
+    marginLeft: 10,
+    //marginHorizontal:10,
   },
   profileInfo: {
     flexDirection: "row",
@@ -480,45 +528,60 @@ const styles = StyleSheet.create({
     color: "#555",
   },
   detailsButtonGirl: {
-    width: "85%",
-    marginLeft: 10,
-    marginTop: 9,
+    width: "80%",
+    marginLeft: "auto",
+    marginRight: "auto",
+    marginTop: 10,
+    //marginTop: 9,
     backgroundColor: "#FFA2C4",
-    paddingVertical: 4,
+    paddingVertical: 6,
     paddingHorizontal: 8,
     borderRadius: 25,
     alignItems: "center",
+    shadowColor: "#ff7aaa",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 5,
   },
   detailsButtonBoy: {
-    width: "85%",
-    marginLeft: 10,
-    marginTop: 9,
+    width: "80%",
+    marginLeft: "auto",
+    marginRight: "auto",
+    marginTop: 10,
+    //marginTop: 9,
     backgroundColor: "#98D4FF",
-    paddingVertical: 4,
+    paddingVertical: 6,
     paddingHorizontal: 8,
     borderRadius: 25,
     alignItems: "center",
+    shadowColor: "#76c6ff",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 5,
   },
 
   detailsName: {
-    width: "85%",
+    width: "90%",
     marginLeft: 10,
     marginTop: 5,
     backgroundColor: "#ffffff",
     paddingVertical: 4,
     paddingHorizontal: 8,
-    borderRadius: 5,
+    borderRadius: 9,
     alignItems: "center", // จัดแนวตัวอักษรในแนวแกน X ให้อยู่ตรงกลาง
     justifyContent: "center", // จัดแนวตัวอักษรในแนวแกน Y ให้อยู่ตรงกลาง
+    //borderWidth:2,
   },
   detailsAge: {
-    width: "85%",
+    width: "90%",
     marginLeft: 10,
     marginTop: 5,
     backgroundColor: "#ffffff",
     paddingVertical: 4,
     paddingHorizontal: 8,
-    borderRadius: 5,
+    borderRadius: 9,
     alignItems: "center",
   },
   detailsText: {
@@ -532,7 +595,7 @@ const styles = StyleSheet.create({
   stateContainer: {
     flexDirection: "row",
     flex: 2,
-    justifyContent: "space-between", // Add space between elements
+    //justifyContent: "space-between", // Add space between elements
     alignItems: "center",
     width: "100%",
     height: "40%",
@@ -541,26 +604,55 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
-    width: 60,
+    width: 55,
     height: "auto",
     borderRadius: 15,
-    borderWidth: 1,
+    //marginVertical:5,
+    marginTop: 10,
+
+    //borderWidth: 1,
+    marginHorizontal: 5.5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.2,
+    shadowRadius: 15,
+    elevation: 5,
   },
   textState: {
+    fontSize: 16,
+    color: "#000000",
+    textAlign: "center",
+  },
+  /* stateIcon: {
+    width: 60,
+    height: 35,
+    borderRadius: 10,
+  }, */
+  aspectName: {
+    color: "#fff",
+    textAlign: "center",
+    width: 55,
+    height: 28,
+    borderTopRightRadius: 10,
+    borderTopLeftRadius: 10,
+    borderBottomRightRadius: 0,
+    borderBottomLeftRadius: 0,
+    backgroundColor: "#8DD9BD",
+    justifyContent: "center",
+  },
+  textaspectName: {
     fontSize: 16,
     color: "#fff",
     textAlign: "center",
   },
-  stateIcon: {
-    width: 50,
-    height: 40,
-    borderRadius: 10,
-  },
   stateNumber: {
-    width: 50,
-    height: 40,
-    borderRadius: 10,
-    backgroundColor: "#FF6565",
+    width: 55,
+    height: 30,
+    borderTopRightRadius: 0,
+    borderTopLeftRadius: 0,
+    borderBottomRightRadius: 10,
+    borderBottomLeftRadius: 10,
+    backgroundColor: "#FFF",
     justifyContent: "center",
     // borderWidth: 1,
   },
@@ -569,14 +661,15 @@ const styles = StyleSheet.create({
 
   startassessmentsSection: {
     alignItems: "center",
-    width: "90%",
+    width: "85%",
     height: "auto",
     marginTop: 15,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 4,
+    marginBottom: 10,
+    // shadowColor: "#000",
+    // shadowOffset: { width: 0, height: 5 },
+    // shadowOpacity: 0.2,
+    // shadowRadius: 3,
+    // elevation: 4,
   },
   evaluateButton: {
     backgroundColor: "#ccfff5",
@@ -587,23 +680,25 @@ const styles = StyleSheet.create({
     // padding: 15,
     justifyContent: "center",
     alignItems: "center",
-    // shadowColor: "#fff",
-    // shadowOffset: { width: 0, height: 5 },
-    // shadowOpacity: 1,
-    // shadowRadius: 3,
-    // elevation: 4,
-    // borderWidth: 2,
+    shadowColor: "#9b9b9b",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
+    elevation: 5,
   },
   asessmentIcon: {
     width: 65,
     height: 65,
-    marginLeft: 10,
+    marginLeft: "auto",
+    marginRight: 20,
+    //borderWidth:2,
   },
   evaluateText: {
     fontSize: 25,
     fontWeight: "bold",
     color: "#333",
-    marginHorizontal: 25,
+    //marginHorizontal: 20,
+    marginRight: "auto",
   },
   // ---------------------------------------------------------------------------------------------
 
@@ -612,7 +707,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     alignItems: "center",
-    width: 350,
+    width: 400,
     height: 550,
   },
   assessmentTop: {
@@ -638,7 +733,7 @@ const styles = StyleSheet.create({
   },
   assessmentTitleContainer: {
     flexDirection: "row",
-    width: "80%",
+    width: "85%",
     alignItems: "center",
   },
   assessmentTitle: {

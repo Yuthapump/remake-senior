@@ -20,6 +20,7 @@ interface Notification {
   child_id?: number;
   status?: "unread" | "read";
   created_at?: string; // อนุญาตให้เป็น optional ถ้า API ไม่ส่งมา
+  template_id?: number;
 }
 
 export const Notificate: FC = () => {
@@ -118,58 +119,139 @@ export const Notificate: FC = () => {
   };
 
   // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  // api markAsRead
+  const markAsRead = async (notification_id: number) => {
+    try {
+      const response = await fetch(
+        "https://your-api-url.com/api/notifications/mark-notification-read",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ notification_id }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log("🔵 อัปเดตสถานะแจ้งเตือนเป็น 'read' แล้ว:", data);
+        setNotifications((prevNotifications) =>
+          prevNotifications.map((notif) =>
+            notif.notification_id === notification_id
+              ? { ...notif, status: "read" }
+              : notif
+          )
+        );
+      } else {
+        console.error("🔴 ไม่สามารถอัปเดตแจ้งเตือนได้:", data.message);
+      }
+    } catch (error) {
+      console.error("❌ Error marking notification as read:", error);
+    }
+  };
+
+  // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   // render Teamplate Notificate
   const renderNotificate = () => {
     return (
       <ScrollView style={styles.ScrollView}>
-        {notifications.map((notif, index) => (
-          <View key={index} style={styles.notificationBox}>
-            <Text style={styles.date}>
-              {notif.created_at
-                ? new Intl.DateTimeFormat("th-TH", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  }).format(new Date(notif.created_at))
-                : "ไม่ทราบวันที่"}
-            </Text>
-            <View style={styles.notificationTopBox}>
-              <View style={styles.iconContainer}>
-                <Image
-                  source={require("../../assets/icons/notification.png")}
-                  style={styles.icon}
-                />
-              </View>
+        {notifications.map((notif, index) => {
+          switch (notif.template_id) {
+            case 1:
+              return (
+                <Pressable
+                  key={index}
+                  style={[
+                    styles.notificationBox,
+                    notif.status === "read"
+                      ? styles.readNotification
+                      : styles.unreadNotification,
+                  ]}
+                  onPress={() => markAsRead(notif.notification_id)}
+                >
+                  <Text style={styles.date}>
+                    {notif.created_at
+                      ? new Intl.DateTimeFormat("th-TH", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }).format(new Date(notif.created_at))
+                      : "ไม่ทราบวันที่"}
+                  </Text>
+                  <View style={styles.notificationTopBox}>
+                    <View style={styles.iconContainer}>
+                      <Image
+                        source={require("../../assets/icons/notification.png")}
+                        style={styles.icon}
+                      />
+                    </View>
+                    <View style={styles.textContainer}>
+                      <Text style={styles.message}>{notif.message}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.resultButtonCantainer}>
+                    <Pressable
+                      style={styles.yesButton}
+                      onPress={() => {
+                        if (
+                          notif.child_id !== undefined &&
+                          notif.supervisor_id !== undefined
+                        ) {
+                          handleApprove(notif.child_id, notif.supervisor_id);
+                        } else {
+                          console.error("child_id or supervisor_id is missing");
+                        }
+                      }}
+                    >
+                      <Text>ยินยอม</Text>
+                    </Pressable>
+                    <Pressable style={styles.noButton}>
+                      <Text>ปฎิเสธ</Text>
+                    </Pressable>
+                  </View>
+                </Pressable>
+              );
 
-              <View style={styles.textContainer}>
-                <Text style={styles.message}>{notif.message}</Text>
-              </View>
-            </View>
+            case 2:
+              return (
+                <View key={index} style={styles.notificationBox}>
+                  <Text style={styles.date}>
+                    {notif.created_at
+                      ? new Intl.DateTimeFormat("th-TH", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }).format(new Date(notif.created_at))
+                      : "ไม่ทราบวันที่"}
+                  </Text>
+                  <View style={styles.notificationTopBox}>
+                    <View style={styles.iconContainer}>
+                      <Image
+                        source={require("../../assets/icons/notification.png")}
+                        style={styles.icon}
+                      />
+                    </View>
+                    <View style={styles.textContainer}>
+                      <Text style={styles.message}>{notif.message}</Text>
+                    </View>
+                  </View>
+                </View>
+              );
 
-            <View style={styles.resultButtonCantainer}>
-              <Pressable
-                style={styles.yesButton}
-                onPress={() => {
-                  if (
-                    notif.child_id !== undefined &&
-                    notif.supervisor_id !== undefined
-                  ) {
-                    handleApprove(notif.child_id, notif.supervisor_id);
-                  } else {
-                    console.error("child_id or supervisor_id is missing");
-                  }
-                }}
-              >
-                <Text>ยินยอม</Text>
-              </Pressable>
-              <Pressable style={styles.noButton}>
-                <Text>ปฎิเสธ</Text>
-              </Pressable>
-            </View>
-          </View>
-        ))}
+            default:
+              return (
+                <View key={index} style={styles.notificationBox}>
+                  <Text>ไม่มีการแจ้งเตือน</Text>
+                </View>
+              );
+          }
+        })}
       </ScrollView>
     );
   };
@@ -182,7 +264,9 @@ export const Notificate: FC = () => {
       style={styles.background}
     >
       <Text style={styles.header}>การแจ้งเตือน</Text>
+      {/* <ScrollView style={styles.ScrollView}> */}
       <View style={styles.container}>{renderNotificate()}</View>
+      {/* </ScrollView> */}
     </ImageBackground>
   );
 };
@@ -292,5 +376,15 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     width: "45%",
     alignItems: "center",
+  },
+
+  // markAsRead or Unread
+  unreadNotification: {
+    backgroundColor: "#FFEBEE", // สีแดงอ่อนสำหรับแจ้งเตือนที่ยังไม่อ่าน
+    borderColor: "#D32F2F",
+  },
+  readNotification: {
+    backgroundColor: "#E0F7FA", // สีฟ้าอ่อนสำหรับแจ้งเตือนที่อ่านแล้ว
+    borderColor: "#00ACC1",
   },
 });
